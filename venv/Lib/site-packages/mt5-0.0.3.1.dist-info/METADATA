@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: mt5
+Version: 0.0.3.1
+Summary: MetaTrader5 multiplatform python api
+Home-page: https://github.com/jkpawlowski96/mt5
+Author: Jakub Pawłowski
+Author-email: jkpawlowski96@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+
+# mt5
+MetaTrader5 multiplatform pip package
+
+### @Jakub Pawłowski
+
+
