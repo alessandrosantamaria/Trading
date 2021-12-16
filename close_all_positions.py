@@ -1,6 +1,7 @@
 import MetaTrader5 as mt5
 from datetime import datetime
 
+from accounts import listBroker
 from mt5_open_close_orders import close_trade
 
 
@@ -20,3 +21,6 @@ def close_all_trade_with_profit(listAccount):
                 "Closing order {} in broker account {} since that the sum of all trades {} are greater then {}!".format(
                     order.symbol, singleAccount["login"], account_info_dict['profit'], balance * 0.05))
             close_trade(order.symbol, listAccount)
+
+
+close_all_trade_with_profit(listBroker)

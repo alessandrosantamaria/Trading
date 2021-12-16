@@ -2,22 +2,11 @@ from flask import *
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from close_all_positions import close_all_trade_with_profit
+from accounts import listBroker
 from check_position_gain import close_order_limit_loss
 from constraints import *
 from mt5_open_close_orders import *
 from set_stop_loss import update_position_take_profit
-
-brokerFXDD50k = {
-    "login": 826838,
-    "server": "BRKHoldings-Demo",
-    "password": "mv7fjeql",
-    "comment": "Long Run",
-    "lot": 2
-}
-
-listBroker = []
-listBroker.append(brokerFXDD50k)
 
 
 def run_schedule_take_profit():
@@ -28,14 +17,10 @@ def run_schedule_close_order():
     close_order_limit_loss(listBroker)
 
 
-def close_all_profit():
-    close_all_trade_with_profit(listBroker)
-
-
 sched = BackgroundScheduler(daemon=True)
 # sched.add_job(run_schedule_take_profit, trigger='cron', minute='*/5')
 sched.add_job(run_schedule_close_order, trigger='cron', second='*/1')
-# sched.add_job(close_all_profit,trigger='cron', minute='10,20,40,50')
+
 sched.start()
 
 app = Flask(__name__)
