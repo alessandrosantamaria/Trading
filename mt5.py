@@ -19,38 +19,57 @@ def open_trade(action, symbol, listBroker):
             quit()
 
         openOrders = mt5.positions_get(symbol=symbol)
+        account_info_dict = mt5.account_info()._asdict()
+        balance = account_info_dict['balance']
         if len(openOrders) > 0:
-            close_trade(openOrders[0])
+            close_trade(symbol, listBroker)
 
         if action == 'BUY':
             trade_type = mt5.ORDER_TYPE_BUY
             price = mt5.symbol_info_tick(symbol).ask
             point = mt5.symbol_info(symbol).point
-            tp = price + 150 * point
+
+
         elif action == 'SELL':
             trade_type = mt5.ORDER_TYPE_SELL
             price = mt5.symbol_info_tick(symbol).bid
             point = mt5.symbol_info(symbol).point
-            tp = price - 150 * point
 
         if "XAU" in symbol:
-            lot = i["sizeXau"]
+            lot = round(balance / 200000, 2)
         elif "ZAR" in symbol:
-            lot = i["sizeZar"]
+            lot = round(balance / 200000, 2)
+        elif "BTCUSD" in symbol:
+            lot = round(balance / 400000, 2)
+        elif "NAS100" in symbol:
+            lot = round(balance / 50000, 1)
+        elif "GER.30" in symbol:
+            lot = round(balance / 50000, 1)
+        elif "ETHUSD" in symbol:
+            lot = round(balance / 50000, 2)
+        elif "SPX500" in symbol:
+            lot = round(balance / 100000, 1)
         else:
-            lot = i["size"]
+            lot = round(balance / 100000, 2)
+
+        lot = lot * i["lot"]
+
+        if symbol == "BTCUSD" or symbol == "ETHUSD":
+            typeFilling = mt5.ORDER_FILLING_FOK
+        else:
+            typeFilling = mt5.ORDER_FILLING_IOC
 
         buy_request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
             "volume": lot,
-            #  "tp": tp,
+            # "tp": tp,
             "type": trade_type,
             "price": price,
             "magic": ea_magic_number,
-            "comment": "sent by python",
+            "comment": "Scalping",
             "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
+            "type_filling": typeFilling,
         }
 
         # send a trading request
@@ -72,30 +91,43 @@ def open_trade(action, symbol, listBroker):
             print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
+def close_trade(symbol, listBroker):
+    for i in listBroker:
 
-def close_trade(order):
-    order_type = order.type
-    symbol = order.symbol
-    volume = order.volume
+        if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+            print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+            quit()
 
-    if order_type == mt5.ORDER_TYPE_BUY:
-        order_type = mt5.ORDER_TYPE_SELL
-        price = mt5.symbol_info_tick(symbol).bid
-    else:
-        order_type = mt5.ORDER_TYPE_BUY
-        price = mt5.symbol_info_tick(symbol).ask
+        openOrders = mt5.positions_get(symbol=symbol)
+        if len(openOrders) > 0:
 
-    close_request = {
-        "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": symbol,
-        "volume": float(volume),
-        "type": order_type,
-        "position": order.ticket,
-        "price": price,
-        "magic": 234000,
-        "comment": "Close trade",
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_IOC,
-    }
+            order_type = openOrders[0].type
+            symbol = openOrders[0].symbol
+            volume = openOrders[0].volume
 
-    mt5.order_send(close_request)
+            if order_type == mt5.ORDER_TYPE_BUY:
+                order_type = mt5.ORDER_TYPE_SELL
+                price = mt5.symbol_info_tick(symbol).bid
+            else:
+                order_type = mt5.ORDER_TYPE_BUY
+                price = mt5.symbol_info_tick(symbol).ask
+
+            if symbol == "BTCUSD":
+                typeFilling = mt5.ORDER_FILLING_FOK
+            else:
+                typeFilling = mt5.ORDER_FILLING_IOC
+
+            close_request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": float(volume),
+                "type": order_type,
+                "position": openOrders[0].ticket,
+                "price": price,
+                "magic": 234000,
+                "comment": "Close trade",
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": typeFilling,
+            }
+
+            mt5.order_send(close_request)

@@ -3,19 +3,22 @@ from datetime import datetime
 
 
 def update_position_take_profit(listAccount):
-
-          if not mt5.initialize(login=listAccount["login"], server=listAccount["server"],
-                                password=listAccount["password"]):
-              print("initialize() failed for account {} , error code =".format(listAccount["login"]), mt5.last_error())
+    for singleAccount in listAccount:
+          if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
+                                password=singleAccount["password"]):
+              print("initialize() failed for account {} , error code =".format(singleAccount["login"]), mt5.last_error())
               quit()
 
           openOrders = mt5.positions_get()
+          account_info_dict = mt5.account_info()._asdict()
+          balance = account_info_dict['balance']
           print("-----Check Orders for Strategy Long Run verification: {}-----".format(datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
           request = {}
 
           for order in openOrders:
 
-              if order.profit > listAccount["sellLimit"]:
+
+              if order.profit > balance*1/100:
                   price = (order.price_open + order.price_current) / 2
 
                   request = {
@@ -54,8 +57,8 @@ def update_position_take_profit(listAccount):
                   else:
                       print("Stop Loss successfully placed for Pair {} with value {} in broker account {} for an "
                             "estimated return of {}$!".format(
-                          order.symbol, price, listAccount["login"], round(order.profit / 2, 2)))
-              elif order.sl == 0 and order.profit > listAccount["noLossLimit"] and order.profit < listAccount["sellLimit"]:
+                          order.symbol, price, singleAccount["login"], round(order.profit / 2, 2)))
+              elif order.sl != order.price_open and order.profit > balance*0.5/100 and order.profit < balance*1/100:
 
                   request = {
                       "action": mt5.TRADE_ACTION_SLTP,
@@ -84,5 +87,5 @@ def update_position_take_profit(listAccount):
                                   print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
                   else:
                       print("Stop Loss successfully placed to Initial Price for Pair {} with value {} in broker account {} for free ride :D!".format(
-                          order.symbol, order.price_open, listAccount["login"], round(order.profit / 2, 2)))
+                          order.symbol, order.price_open, singleAccount["login"], round(order.profit / 2, 2)))
 
