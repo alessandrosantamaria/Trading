@@ -2,12 +2,11 @@ from flask import *
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from checkptofittarget import close_all_trade_with_profit
-from cleanloss import close_order_limit_loss
-from mt5 import *
-from scalping import scalping_strategy
-from takeprofit import update_position_take_profit
-from pipsstrategy import close_order_15_pips
+from close_all_positions import close_all_trade_with_profit
+from check_position_gain import close_order_limit_loss
+from constraints import *
+from mt5_open_close_orders import *
+from set_stop_loss import update_position_take_profit
 
 brokerFXDD50k = {
     "login": 826838,
@@ -33,15 +32,10 @@ def close_all_profit():
     close_all_trade_with_profit(listBroker)
 
 
-def fifteen_pips():
-    close_order_15_pips(brokerFXDD50k)
-
-
 sched = BackgroundScheduler(daemon=True)
 # sched.add_job(run_schedule_take_profit, trigger='cron', minute='*/5')
 sched.add_job(run_schedule_close_order, trigger='cron', second='*/1')
 # sched.add_job(close_all_profit,trigger='cron', minute='10,20,40,50')
-# sched.add_job(fifteen_pips, trigger='cron',minute='2-4,6-9,11-14,16-19,21-24,26-29,31-34,36-39,41-44,46-49,51-54,56-59')
 sched.start()
 
 app = Flask(__name__)
@@ -58,17 +52,15 @@ def home():
     print(message)
 
     if symbol == "GER30":
-        symbol = "GER.30"
+        symbol = DAX_MT5
     elif symbol == "US100":
-        symbol = "NAS100"
+        symbol = NASDAQ_MT5
     elif symbol == "US500":
-        symbol = "SPX500"
+        symbol = SP500_MT5
     elif symbol == "ETHUSDT":
-        symbol = "ETHUSD"
+        symbol = ETH_MT5
     elif symbol == "BTCUSDT":
-        symbol = "BTCUSD"
-    elif symbol == "USOIL":
-        symbol = "OILUSD"
+        symbol = BTC_MT5
 
     open_trade(order, symbol, listBroker)
 

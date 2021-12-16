@@ -1,6 +1,6 @@
 import MetaTrader5 as mt5
 from datetime import datetime
-from mt5 import close_trade
+from mt5_open_close_orders import close_trade
 
 
 def close_order_limit_loss(listAccount):
@@ -16,16 +16,17 @@ def close_order_limit_loss(listAccount):
 
         if len(openOrders) > 0:
             for order in openOrders:
-                if order.profit < float(str((balance*singleAccount["lot"] * 0.2 / 100) * -1)[:4]) or order.profit > float(
-                        str((balance*singleAccount["lot"] * 0.1 / 100))[:4]):
+                if order.profit < float(
+                        str((balance * singleAccount["lot"] * 0.2 / 100) * -1)[:4]) or order.profit > float(
+                        str((balance * singleAccount["lot"] * 0.1 / 100))[:4]):
                     close_trade(order.symbol, listAccount)
-                    if order.profit < float(str((balance*singleAccount["lot"] * 0.2 / 100) * -1)[:4]):
+                    if order.profit < float(str((balance * singleAccount["lot"] * 0.2 / 100) * -1)[:4]):
                         print(" * Closing order {} in broker account {} due to loss {} is greater then {}$ :((!".format(
                             order.symbol, singleAccount["login"], round(order.profit, 2),
-                            abs(balance*singleAccount["lot"] * 0.2 / 100) * -1))
+                            abs(balance * singleAccount["lot"] * 0.2 / 100) * -1))
 
                     else:
                         print(
                             " * Closing order {} in broker account {} due to profit {} is greater then {}$ :))!".format(
                                 order.symbol, singleAccount["login"], abs(round(order.profit, 2)),
-                                abs(balance*singleAccount["lot"] * 0.1 / 100)))
+                                abs(balance * singleAccount["lot"] * 0.1 / 100)))

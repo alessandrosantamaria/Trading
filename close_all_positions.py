@@ -1,7 +1,7 @@
 import MetaTrader5 as mt5
 from datetime import datetime
 
-from mt5 import close_trade
+from mt5_open_close_orders import close_trade
 
 
 def close_all_trade_with_profit(listAccount):
@@ -14,10 +14,9 @@ def close_all_trade_with_profit(listAccount):
             datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
         account_info_dict = mt5.account_info()._asdict()
         balance = account_info_dict['balance']
-        if account_info_dict['profit'] > balance * 0.1:
-            openOrders = mt5.positions_get()
-            for order in openOrders:
-                print(
-                    "Closing order {} in broker account {} since that the sum of all trades {} are greater then {}!".format(
-                        order.symbol, singleAccount["login"],account_info_dict['profit'], balance * 0.05))
-                close_trade(order.symbol, listAccount)
+        openOrders = mt5.positions_get()
+        for order in openOrders:
+            print(
+                "Closing order {} in broker account {} since that the sum of all trades {} are greater then {}!".format(
+                    order.symbol, singleAccount["login"], account_info_dict['profit'], balance * 0.05))
+            close_trade(order.symbol, listAccount)

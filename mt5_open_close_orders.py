@@ -1,5 +1,7 @@
 import MetaTrader5 as mt5
 
+from constraints import *
+
 ea_magic_number = 9986989  # if you want to give every bot a unique identifier
 
 
@@ -27,27 +29,26 @@ def open_trade(action, symbol, listBroker):
         if action == 'BUY':
             trade_type = mt5.ORDER_TYPE_BUY
             price = mt5.symbol_info_tick(symbol).ask
-            point = mt5.symbol_info(symbol).point
+
 
 
         elif action == 'SELL':
             trade_type = mt5.ORDER_TYPE_SELL
             price = mt5.symbol_info_tick(symbol).bid
-            point = mt5.symbol_info(symbol).point
 
         if "XAU" in symbol:
             lot = round(balance / 200000, 2)
         elif "ZAR" in symbol:
             lot = round(balance / 200000, 2)
-        elif "BTCUSD" in symbol:
+        elif BTC_MT5 in symbol:
             lot = round(balance / 400000, 2)
-        elif "NAS100" in symbol:
+        elif NASDAQ_MT5 in symbol:
             lot = round(balance / 50000, 1)
-        elif "GER.30" in symbol:
+        elif DAX_MT5 in symbol:
             lot = round(balance / 50000, 1)
-        elif "ETHUSD" in symbol:
+        elif ETH_MT5 in symbol:
             lot = round(balance / 50000, 2)
-        elif "SPX500" in symbol:
+        elif SP500_MT5 in symbol:
             lot = round(balance / 100000, 1)
         else:
             lot = round(balance / 100000, 2)
@@ -63,7 +64,6 @@ def open_trade(action, symbol, listBroker):
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
             "volume": lot,
-            # "tp": tp,
             "type": trade_type,
             "price": price,
             "magic": ea_magic_number,
@@ -112,7 +112,7 @@ def close_trade(symbol, listBroker):
                 order_type = mt5.ORDER_TYPE_BUY
                 price = mt5.symbol_info_tick(symbol).ask
 
-            if symbol == "BTCUSD":
+            if symbol == BTC_MT5:
                 typeFilling = mt5.ORDER_FILLING_FOK
             else:
                 typeFilling = mt5.ORDER_FILLING_IOC
