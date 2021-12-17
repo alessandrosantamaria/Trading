@@ -3,7 +3,7 @@ from datetime import datetime
 from mt5_open_close_orders import close_trade
 
 
-def close_order_limit_loss(listAccount):
+def check_gain(listAccount):
     for singleAccount in listAccount:
         if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
                               password=singleAccount["password"]):

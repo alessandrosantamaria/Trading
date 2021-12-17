@@ -3,23 +3,23 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from accounts import listBroker
-from check_position_gain import close_order_limit_loss
+from check_position_gain import check_gain
 from constraints import *
 from mt5_open_close_orders import *
-from set_stop_loss import update_position_take_profit
+from set_stop_loss import update_position_stop_loss, update_position_stop_loss_to_price_open
 
 
-def run_schedule_take_profit():
-    update_position_take_profit(listBroker)
+def run_schedule_stop_loss():
+    update_position_stop_loss(listBroker)
 
 
-def run_schedule_close_order():
-    close_order_limit_loss(listBroker)
+def run_schedule_check_gain():
+    check_gain(listBroker)
 
 
 sched = BackgroundScheduler(daemon=True)
-# sched.add_job(run_schedule_take_profit, trigger='cron', minute='*/5')
-sched.add_job(run_schedule_close_order, trigger='cron', second='*/1')
+sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/1')
+sched.add_job(run_schedule_check_gain, trigger='cron', second='*/1')
 
 sched.start()
 

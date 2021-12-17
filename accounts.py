@@ -1,7 +1,7 @@
 brokerFXDD50k = {
-    "login": 826838,
+    "login": 826962,
     "server": "BRKHoldings-Demo",
-    "password": "mv7fjeql",
+    "password": "pgc3xmtc",
     "comment": "Long Run",
     "lot": 2
 }
