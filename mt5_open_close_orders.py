@@ -4,6 +4,7 @@ from datetime import date
 import MetaTrader5 as mt5
 
 from constraints import *
+from telegram import send_message_telegram_open_trade, send_message_telegram_close_trade
 
 ea_magic_number = 9986989  # if you want to give every bot a unique identifier
 
@@ -74,6 +75,7 @@ def open_trade(action, symbol, listBroker):
         }
 
         # send a trading request
+        send_message_telegram_open_trade(symbol, lot)
         result = mt5.order_send(buy_request)
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -131,7 +133,7 @@ def close_trade(symbol, listBroker):
                     "type_time": mt5.ORDER_TIME_GTC,
                     "type_filling": typeFilling,
                 }
-
+                send_message_telegram_close_trade(symbol, openOrders[0].profit)
                 mt5.order_send(close_request)
 
 
