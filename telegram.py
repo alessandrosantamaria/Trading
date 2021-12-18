@@ -13,5 +13,3 @@ def send_message_telegram_close_trade(symbol, profit):
     message = 'Close Trade for {} with profit {}'.format(symbol, profit)
     requests.post('https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN, CHAT_ID, message))
 
-
-send_message_telegram_open_trade("XAUUSD",0.25)
