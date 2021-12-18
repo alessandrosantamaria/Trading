@@ -1,5 +1,4 @@
 import MetaTrader5 as mt5
-from datetime import datetime
 from mt5_open_close_orders import close_trade
 
 

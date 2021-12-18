@@ -10,8 +10,6 @@ ea_magic_number = 9986989  # if you want to give every bot a unique identifier
 
 
 def get_info(symbol):
-    '''https://www.mql5.com/en/docs/integration/python_metatrader5/mt5symbolinfo_py
-    '''
     # get symbol properties
     info = mt5.symbol_info(symbol)
     return info
@@ -201,6 +199,7 @@ def open_trade_martingale(action, symbol, listBroker):
         }
 
         # send a trading request
+        send_message_telegram_open_trade(symbol, lot)
         result = mt5.order_send(buy_request)
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -262,4 +261,8 @@ def close_trade_martingale(symbol, listBroker):
             else:
                 symbols[symbol] = 0
 
+            send_message_telegram_close_trade(symbol, openOrders[0].profit)
             mt5.order_send(close_request)
+            account_info_dict = mt5.account_info()._asdict()
+            balance = account_info_dict['balance']
+            send_message_telegram_update_gain_balance(balance)
