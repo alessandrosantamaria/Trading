@@ -4,7 +4,8 @@ from datetime import date
 import MetaTrader5 as mt5
 
 from constraints import *
-from telegram import send_message_telegram_open_trade, send_message_telegram_close_trade
+from telegram import send_message_telegram_open_trade, send_message_telegram_close_trade, \
+    send_message_telegram_update_gain_capital
 
 ea_magic_number = 9986989  # if you want to give every bot a unique identifier
 
@@ -135,6 +136,10 @@ def close_trade(symbol, listBroker):
                 }
                 send_message_telegram_close_trade(symbol, openOrders[0].profit)
                 mt5.order_send(close_request)
+                account_info_dict = mt5.account_info()._asdict()
+                balance = account_info_dict['balance']
+                send_message_telegram_update_gain_capital(balance)
+
 
 
 def open_trade_martingale(action, symbol, listBroker):
