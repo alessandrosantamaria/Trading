@@ -10,11 +10,15 @@ def send_message_telegram_open_trade(symbol, lot):
 
 
 def send_message_telegram_close_trade(symbol, profit):
-    message = 'Close Trade for {} with profit {}'.format(symbol, profit)
+    if profit > 0:
+        message = '** Close Trade for {} with profit {}$ {} **'.format(symbol, profit,
+                                                                       '\N{money-mouth face}')
+    else:
+        message = '** Close Trade for {} with loss {}$ {} **'.format(symbol, profit,
+                                                                     '\N{loudly crying face}')
     requests.post('https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN, CHAT_ID, message))
 
-def send_message_telegram_update_gain_capital(capital):
-    message = 'With the latest operation ,the net worth is {}'.format(capital)
+
+def send_message_telegram_update_gain_balance(balance):
+    message = '** With the latest operation ,the current balance is {}$ **'.format(balance)
     requests.post('https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN, CHAT_ID, message))
-
-
