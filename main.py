@@ -18,7 +18,7 @@ def run_schedule_check_gain():
 
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/1')
+#sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/1')
 sched.add_job(run_schedule_check_gain, trigger='cron', second='*/1')
 
 sched.start()
