@@ -1,11 +1,11 @@
-from datetime import date
+from datetime import date, datetime
 
 import MetaTrader5 as mt5
 from mt5_open_close_orders import close_trade
 
 
 def check_gain(listAccount):
-    if date.today().weekday() < 5:
+    if date.today().weekday() < 5 or (date.today().weekday() == 6 and datetime.now().hour >= 23):
         for singleAccount in listAccount:
             if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
                                   password=singleAccount["password"]):

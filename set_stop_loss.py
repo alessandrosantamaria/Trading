@@ -1,7 +1,4 @@
 import MetaTrader5 as mt5
-from datetime import datetime
-
-from accounts import listBroker
 
 
 def update_position_stop_loss(listAccount):
@@ -23,9 +20,9 @@ def update_position_stop_loss(listAccount):
                     str((balance * singleAccount["lot"] * 0.075 / 100))[:4]) and order.sl == 0:
 
                 if order.type == 0:
-                    price = order.price_open - abs(round(order.price_current - order.price_open, 5)*2)
+                    price = order.price_open - abs(round(order.price_current - order.price_open, 5) * 2)
                 else:
-                    price = order.price_open + abs(round(order.price_current - order.price_open, 5)*2)
+                    price = order.price_open + abs(round(order.price_current - order.price_open, 5) * 2)
 
                 request = {
                     "action": mt5.TRADE_ACTION_SLTP,
@@ -96,9 +93,6 @@ def update_position_stop_loss(listAccount):
                     print(
                         "Stop Loss successfully placed to Initial Price for Pair {} with value {} in broker account {} for free ride :D!".format(
                             order.symbol, order.price_open, singleAccount["login"], round(order.profit / 2, 2)))
-
-
-update_position_stop_loss(listBroker)
 
 
 def update_position_stop_loss_to_price_open(listAccount):

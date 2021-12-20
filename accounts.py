@@ -1,4 +1,4 @@
-brokerFXDD50k = {
+broker = {
     "login": 826962,
     "server": "BRKHoldings-Demo",
     "password": "pgc3xmtc",
@@ -6,4 +6,4 @@ brokerFXDD50k = {
     "lot": 2
 }
 
-listBroker = [brokerFXDD50k]
+listBroker = [broker]

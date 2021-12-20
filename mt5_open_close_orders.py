@@ -1,9 +1,7 @@
-import sys
-from datetime import date
+
+from datetime import date, datetime
 
 import MetaTrader5 as mt5
-
-from constraints import *
 from telegram import *
 
 ea_magic_number = 9986989  # if you want to give every bot a unique identifier
@@ -95,7 +93,7 @@ def open_trade(action, symbol, listBroker):
 
 def close_trade(symbol, listBroker):
     for i in listBroker:
-        if date.today().weekday() == 4 and symbol != "BTCUSD":
+        if date.today().weekday() == 4 and symbol != "BTCUSD" or date.today().weekday() < 5:
             if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
                 print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
                 quit()

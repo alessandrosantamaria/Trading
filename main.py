@@ -16,10 +16,14 @@ def run_schedule_stop_loss():
 def run_schedule_check_gain():
     check_gain(listBroker)
 
+def run_daily_report():
+    send_daily_report(listBroker)
+
 
 sched = BackgroundScheduler(daemon=True)
 #sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/1')
 sched.add_job(run_schedule_check_gain, trigger='cron', second='*/1')
+sched.add_job(run_daily_report,trigger='cron', day='*/1')
 
 sched.start()
 
