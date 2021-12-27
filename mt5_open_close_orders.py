@@ -1,8 +1,8 @@
-
 from datetime import date, datetime
 
 import MetaTrader5 as mt5
 from telegram import *
+import math
 
 ea_magic_number = 9986989  # if you want to give every bot a unique identifier
 
@@ -13,8 +13,8 @@ def get_info(symbol):
     return info
 
 
-def open_trade(action, symbol, listBroker):
-    if (date.today().weekday() == 4 and symbol != 'BTCUSD') or date.today().weekday() < 5:
+def open_trade(action, symbol, listBroker, sizeRenko):
+    if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5:
         for i in listBroker:
 
             if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
@@ -30,12 +30,12 @@ def open_trade(action, symbol, listBroker):
             if action == 'BUY':
                 trade_type = mt5.ORDER_TYPE_BUY
                 price = mt5.symbol_info_tick(symbol).ask
-
-
+                tp, sl = round_sl_tp(price, sizeRenko, symbol, action)
 
             elif action == 'SELL':
                 trade_type = mt5.ORDER_TYPE_SELL
                 price = mt5.symbol_info_tick(symbol).bid
+                tp, sl = round_sl_tp(price, sizeRenko, symbol, action)
 
             if "XAU" in symbol:
                 lot = round(balance / 200000, 2)
@@ -44,11 +44,11 @@ def open_trade(action, symbol, listBroker):
             elif BTC_MT5 in symbol:
                 lot = round(balance / 400000, 2)
             elif NASDAQ_MT5 in symbol:
-                lot = round(balance / 50000, 1)
+                lot = round(balance / 25000, 1)
             elif DAX_MT5 in symbol:
-                lot = round(balance / 50000, 1)
+                lot = round(balance / 25000, 1)
             elif SP500_MT5 in symbol:
-                lot = round(balance / 100000, 1)
+                lot = round(balance / 50000, 1)
             else:
                 lot = round(balance / 100000, 2)
 
@@ -65,6 +65,8 @@ def open_trade(action, symbol, listBroker):
                 "volume": lot,
                 "type": trade_type,
                 "price": price,
+                "tp": tp,
+                "sl": sl,
                 "magic": ea_magic_number,
                 "comment": "Scalping",
                 "type_time": mt5.ORDER_TIME_GTC,
@@ -72,7 +74,7 @@ def open_trade(action, symbol, listBroker):
             }
 
             # send a trading request
-            send_message_telegram_open_trade(symbol, lot)
+            send_message_telegram_open_trade(symbol, lot,action,tp,sl)
             result = mt5.order_send(buy_request)
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -264,3 +266,39 @@ def close_trade_martingale(symbol, listBroker):
             account_info_dict = mt5.account_info()._asdict()
             balance = account_info_dict['balance']
             send_message_telegram_update_gain_balance(balance)
+
+
+def round_sl_tp(price, sizeRenko, symbol, action):
+    if action == "BUY":
+        if "JPY" in symbol:
+            tp = round(price + sizeRenko, 1)
+            sl = round(price - sizeRenko * 1.6, 1)
+        elif  symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
+            tp = round(price + sizeRenko, -1)
+            sl = round(price - sizeRenko * 1.6, -1)
+        elif symbol == "XAUUSD":
+            tp = round(price + sizeRenko)
+            sl = round(price - sizeRenko * 1.6)
+        elif symbol == BTC_MT5:
+            tp = round(price + sizeRenko,-2)
+            sl = round(price - sizeRenko * 1.6,-2)
+        else:
+            tp = round(price + sizeRenko, 3)
+            sl = round(price - sizeRenko * 1.6, 3)
+    else:
+        if "JPY" in symbol :
+            tp = round(price - sizeRenko, 1)
+            sl = round(price + sizeRenko * 1.6, 1)
+        elif  symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
+            tp = round(price - sizeRenko, -1)
+            sl = round(price + sizeRenko * 1.6, -1)
+        elif symbol == BTC_MT5:
+            tp = round(price - sizeRenko, -2)
+            sl = round(price + sizeRenko * 1.6, -2)
+        elif symbol == "XAUUSD":
+            tp = float(round(price - sizeRenko))
+            sl = float(round(price + sizeRenko * 1.6))
+        else:
+            tp = round(price - sizeRenko, 3)
+            sl = round(price + sizeRenko * 1.6, 3)
+    return tp, sl

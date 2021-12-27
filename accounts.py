@@ -1,9 +1,9 @@
 broker = {
-    "login": 826962,
+    "login": 827681,
     "server": "BRKHoldings-Demo",
-    "password": "pgc3xmtc",
+    "password": "7jwdqykj",
     "comment": "Long Run",
-    "lot": 2
+    "lot": 1
 }
 
 listBroker = [broker]

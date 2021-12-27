@@ -3,11 +3,13 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from accounts import listBroker
-from check_position_gain import check_gain
+from check_position_gain import check_gain, retrieve_position_ids, check_positionIds_close_orders
 from constraints import *
 from mt5_open_close_orders import *
 from set_stop_loss import update_position_stop_loss, update_position_stop_loss_to_price_open
 
+ids = []
+close_orders = []
 
 def run_schedule_stop_loss():
     update_position_stop_loss(listBroker)
@@ -19,12 +21,17 @@ def run_schedule_check_gain():
 def run_daily_report():
     send_daily_report(listBroker)
 
+def run_telegram_close_order(close_orders=close_orders, ids=ids):
+    ids = retrieve_position_ids(listBroker, ids)
+    close_orders, ids = check_positionIds_close_orders(listBroker, ids, close_orders)
+    send_message_close_order(close_orders)
+
 
 sched = BackgroundScheduler(daemon=True)
-#sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/1')
-sched.add_job(run_schedule_check_gain, trigger='cron', second='*/1')
+sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/1')
+#sched.add_job(run_schedule_check_gain, trigger='cron', second='*/1')
 sched.add_job(run_daily_report,trigger='cron', day='*/1')
-
+sched.add_job(run_telegram_close_order, trigger='cron', second='*/1')
 sched.start()
 
 app = Flask(__name__)
@@ -35,6 +42,7 @@ def home():
     json_data = request.json
     symbol = str(json_data["symbol"])
     order = str(json_data["order"]).upper()
+    sizeRenko = float(json_data["sizeRenko"])
 
     message = symbol + " - " + order
     print("***PLACING ORDER***")
@@ -51,7 +59,7 @@ def home():
     elif symbol == "BTCUSDT":
         symbol = BTC_MT5
 
-    open_trade(order, symbol, listBroker)
+    open_trade(order, symbol, listBroker,sizeRenko)
 
     print("***     END     ***")
     return message
