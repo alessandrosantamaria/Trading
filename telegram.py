@@ -3,12 +3,12 @@ import MetaTrader5 as mt5
 
 from accounts import listBroker
 from constraints import *
-from retrieve_history import daily_report
+from retrieve_history import  daily_report
 
 
-def send_message_telegram_open_trade(symbol, lot, action, tp, sl):
-    message = '** Open Trade **\nSymbol: {}\nLot: {}\nAction: {}\nTp: {}\nSl: {}\n{}'.format(symbol, lot, action, tp,
-                                                                                             sl, '\N{call me hand}')
+def send_message_telegram_open_trade(symbol, lot, action):
+    message = '** Open Trade **\nSymbol: {}\nLot: {}\nAction: {}\n{}'.format(symbol, lot, action,
+                                                                             '\N{call me hand}')
     requests.post(
         'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                message))
@@ -34,19 +34,22 @@ def send_message_telegram_update_gain_balance(balance):
 
 
 def send_message_telegram_set_stop_loss(symbol, sl):
-    message = '** Stop Loss successfully placed to Initial Price for Pair {}} with value {}} for free ride {}'.format(
+    message = '** Stop Loss successfully placed to Initial Price for Pair {} with value {} for free ride {} **'.format(
         symbol, sl, '\N{grimacing face}')
     requests.post(
         'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                message))
 
 
-def send_daily_report(listBroker):
+def send_daily_report(listBroker,strategy):
     for account in listBroker:
-        message = daily_report(account)
+        message = daily_report(account,strategy)
         requests.post(
             'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                    message))
+
+
+
 
 
 def send_message_close_order(closeOrders):
@@ -54,7 +57,7 @@ def send_message_close_order(closeOrders):
         if order['profit'] > 0:
             message = '** Close Trade **\nSymbol: {}\nProfit: {}$\n{}'.format(order['symbol'], order['profit'],
                                                                               '\N{money-mouth face}')
-        else:
+        elif order['profit'] < 0:
             message = '** Close Trade **\nSymbol: {}\nLoss: {}$\n{}'.format(order['symbol'], order['profit'],
                                                                             '\N{loudly crying face}')
         requests.post(
@@ -65,4 +68,24 @@ def send_message_close_order(closeOrders):
         balance = account_info_dict['balance']
         send_message_telegram_update_gain_balance(balance)
 
-# send_daily_report(listBroker)
+
+def send_scalping_stock(profit):
+    if profit > 0:
+          message = "** Close all Stock positions **\nProfit :{}$\n{}".format(round(profit,2), '\N{money-mouth face}')
+          requests.post(
+                 'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                               message))
+
+
+def send_scalping_profit(profit):
+    if profit > 0:
+          message = "** Close all scalping position **\nProfit :{}$\n{}".format(round(profit,2), '\N{money-mouth face}')
+          requests.post(
+                 'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                               message))
+    elif profit < 0:
+        message = "** Close all scalping position **\nProfit :{}$\n{}".format(round(profit, 2), '\N{loudly crying face}')
+        requests.post(
+            'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                                   message))
+

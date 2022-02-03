@@ -13,8 +13,9 @@ def get_info(symbol):
     return info
 
 
-def open_trade(action, symbol, listBroker, sizeRenko):
-    if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5:
+def open_trade_scalping(action, symbol, listBroker):
+    if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
+            date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for i in listBroker:
 
             if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
@@ -25,17 +26,17 @@ def open_trade(action, symbol, listBroker, sizeRenko):
             account_info_dict = mt5.account_info()._asdict()
             balance = account_info_dict['balance']
             if len(openOrders) > 0:
-                close_trade(symbol, listBroker)
+                close_trade_scalping(symbol, listBroker)
 
             if action == 'BUY':
                 trade_type = mt5.ORDER_TYPE_BUY
                 price = mt5.symbol_info_tick(symbol).ask
-                tp, sl = round_sl_tp(price, sizeRenko, symbol, action)
+                # tp, sl = round_sl_tp(price,  symbol, action)
 
             elif action == 'SELL':
                 trade_type = mt5.ORDER_TYPE_SELL
                 price = mt5.symbol_info_tick(symbol).bid
-                tp, sl = round_sl_tp(price, sizeRenko, symbol, action)
+                # tp, sl = round_sl_tp(price, sizeRenko, symbol, action)
 
             if "XAU" in symbol:
                 lot = round(balance / 200000, 2)
@@ -43,18 +44,27 @@ def open_trade(action, symbol, listBroker, sizeRenko):
                 lot = round(balance / 200000, 2)
             elif BTC_MT5 in symbol:
                 lot = round(balance / 400000, 2)
-            elif NASDAQ_MT5 in symbol:
+            elif NASDAQ_MT5 in symbol or DOW_MR5 in symbol or JPN_MT5 in symbol:
                 lot = round(balance / 25000, 1)
             elif DAX_MT5 in symbol:
                 lot = round(balance / 25000, 1)
-            elif SP500_MT5 in symbol:
+            elif SP500_MT5 in symbol or FRA_MT5 in symbol or ESP_MT5 in symbol or AUS_MT5 in symbol:
                 lot = round(balance / 50000, 1)
+            elif GOOGLE_MT5 in symbol or AMAZON_MT5 in symbol or TESLA_MT5 in symbol:
+                lot = 0.1
+            elif APPLE_MT5 in symbol:
+                lot = 1
+            elif NETFLIX_MT5 in symbol:
+                lot = 0.2
             else:
                 lot = round(balance / 100000, 2)
 
-            lot = lot * i["lot"]
+            if NASDAQ_MT5 in symbol or DOW_MR5 in symbol or SP500_MT5 in symbol or DAX_MT5 in symbol:
+                lot = round(lot * i["lot"], 1)
+            else:
+                lot = round(lot * i["lot"], 2)
 
-            if symbol == "BTCUSD" or symbol == "ETHUSD":
+            if symbol == "BTCUSD" or symbol == "ETHUSD" or symbol == APPLE_MT5 or symbol == TESLA_MT5 or symbol == NETFLIX_MT5 or symbol == GOOGLE_MT5 or symbol == AMAZON_MT5:
                 typeFilling = mt5.ORDER_FILLING_FOK
             else:
                 typeFilling = mt5.ORDER_FILLING_IOC
@@ -65,16 +75,16 @@ def open_trade(action, symbol, listBroker, sizeRenko):
                 "volume": lot,
                 "type": trade_type,
                 "price": price,
-                "tp": tp,
-                "sl": sl,
+                # "tp": tp,
+                # "sl": sl,
                 "magic": ea_magic_number,
-                "comment": "Scalping",
+                "comment": i["strategyShort"],
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": typeFilling,
             }
 
             # send a trading request
-            send_message_telegram_open_trade(symbol, lot,action,tp,sl)
+            send_message_telegram_open_trade(symbol, lot, action)
             result = mt5.order_send(buy_request)
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -93,53 +103,186 @@ def open_trade(action, symbol, listBroker, sizeRenko):
                 print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
-def close_trade(symbol, listBroker):
-    for i in listBroker:
-        if date.today().weekday() == 4 and symbol != "BTCUSD" or date.today().weekday() < 5:
+def open_trade_stock(action, symbol, listBroker):
+    if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
+            date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
+        for i in listBroker:
+
+            if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+                print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+                quit()
+
+
+            account_info_dict = mt5.account_info()._asdict()
+            balance = account_info_dict['balance']
+            lot = 0
+
+            if action == 'BUY':
+                trade_type = mt5.ORDER_TYPE_BUY
+                price = mt5.symbol_info_tick(symbol).ask
+                # tp, sl = no_round_tp(price, sizeRenko, action)
+
+            elif action == 'SELL':
+                trade_type = mt5.ORDER_TYPE_SELL
+                price = mt5.symbol_info_tick(symbol).bid
+                # tp, sl = no_round_tp(price, sizeRenko, action)
+
+            if "XAU" in symbol:
+                lot = round(balance / 200000, 2)
+            elif "ZAR" in symbol:
+                lot = round(balance / 200000, 2)
+            elif BTC_MT5 in symbol:
+                lot = round(balance / 400000, 2)
+            elif NASDAQ_MT5 in symbol or DOW_MR5 in symbol or JPN_MT5 in symbol:
+                lot = round(balance / 25000, 1)
+            elif DAX_MT5 in symbol:
+                lot = round(balance / 25000, 1)
+            elif SP500_MT5 in symbol or FRA_MT5 in symbol or ESP_MT5 in symbol or AUS_MT5 in symbol:
+                lot = round(balance / 50000, 1)
+            elif GOOGLE_MT5 in symbol or AMAZON_MT5 in symbol or TESLA_MT5 in symbol:
+                lot = 0.1
+            elif APPLE_MT5 in symbol:
+                lot = 1
+            elif NETFLIX_MT5 in symbol:
+                lot = 0.2
+            else:
+                lot = round(balance / 100000, 2)
+
+            if NASDAQ_MT5 in symbol or DOW_MR5 in symbol or SP500_MT5 in symbol or DAX_MT5 in symbol:
+                lot = round(lot * i["lot"]/2, 1)
+            else:
+                lot = round(lot * i["lot"]/2, 2)
+
+            if symbol == "BTCUSD" or symbol == "ETHUSD" or symbol == APPLE_MT5 or symbol == TESLA_MT5 or symbol == NETFLIX_MT5 or symbol == GOOGLE_MT5 or symbol == AMAZON_MT5:
+                typeFilling = mt5.ORDER_FILLING_FOK
+            else:
+                typeFilling = mt5.ORDER_FILLING_IOC
+
+            buy_request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": lot,
+                "type": trade_type,
+                "price": price,
+                # "tp": tp,
+                # "sl": sl,
+                "magic": ea_magic_number,
+                "comment": i["strategyScalping"],
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": typeFilling,
+            }
+
+            # send a trading request
+            # send_message_telegram_open_trade(symbol, lot, action)
+            result = mt5.order_send(buy_request)
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                print("[x] order_send failed, retcode={}".format(result.retcode))
+                # request the result as a dictionary and display it element by element
+                result_dict = result._asdict()
+                for field in result_dict.keys():
+                    print("{}={}".format(field, result_dict[field]))
+                    # if this is a trading request structure, display it element by element as well
+                    if field == "request":
+                        traderequest_dict = result_dict[field]._asdict()
+                        for tradereq_filed in traderequest_dict:
+                            print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+
+            else:
+
+                print("Order successfully placed in broker account {}!".format(i["login"]))
+
+
+def open_trade_follow(action, symbol, listBroker):
+    if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
+            date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
+        for i in listBroker:
+
             if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
                 print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
                 quit()
 
             openOrders = mt5.positions_get(symbol=symbol)
-
+            account_info_dict = mt5.account_info()._asdict()
+            balance = account_info_dict['balance']
             if len(openOrders) > 0:
+                close_trade_follow(symbol, listBroker)
 
-                order_type = openOrders[0].type
-                symbol = openOrders[0].symbol
-                volume = openOrders[0].volume
+            if action == 'BUY':
+                trade_type = mt5.ORDER_TYPE_BUY
+                price = mt5.symbol_info_tick(symbol).ask
+                # tp, sl = round_sl_tp(price,  symbol, action)
 
-                if order_type == mt5.ORDER_TYPE_BUY:
-                    order_type = mt5.ORDER_TYPE_SELL
-                    price = mt5.symbol_info_tick(symbol).bid
-                else:
-                    order_type = mt5.ORDER_TYPE_BUY
-                    price = mt5.symbol_info_tick(symbol).ask
+            elif action == 'SELL':
+                trade_type = mt5.ORDER_TYPE_SELL
+                price = mt5.symbol_info_tick(symbol).bid
+                # tp, sl = round_sl_tp(price, sizeRenko, symbol, action)
 
-                if symbol == BTC_MT5:
-                    typeFilling = mt5.ORDER_FILLING_FOK
-                else:
-                    typeFilling = mt5.ORDER_FILLING_IOC
+            if "XAU" in symbol:
+                lot = round(balance / 200000, 2)
+            elif "ZAR" in symbol:
+                lot = round(balance / 200000, 2)
+            elif BTC_MT5 in symbol:
+                lot = round(balance / 400000, 2)
+            elif NASDAQ_MT5 in symbol or DOW_MR5 in symbol or JPN_MT5 in symbol:
+                lot = round(balance / 25000, 1)
+            elif DAX_MT5 in symbol:
+                lot = round(balance / 25000, 1)
+            elif SP500_MT5 in symbol or FRA_MT5 in symbol or ESP_MT5 in symbol or AUS_MT5 in symbol:
+                lot = round(balance / 50000, 1)
+            elif GOOGLE_MT5 in symbol or AMAZON_MT5 in symbol or TESLA_MT5 in symbol:
+                lot = 0.1
+            elif APPLE_MT5 in symbol:
+                lot = 1
+            elif NETFLIX_MT5 in symbol:
+                lot = 0.2
+            else:
+                lot = round(balance / 100000, 2)
 
-                close_request = {
-                    "action": mt5.TRADE_ACTION_DEAL,
-                    "symbol": symbol,
-                    "volume": float(volume),
-                    "type": order_type,
-                    "position": openOrders[0].ticket,
-                    "price": price,
-                    "magic": 234000,
-                    "comment": "Close trade",
-                    "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": typeFilling,
-                }
-                send_message_telegram_close_trade(symbol, openOrders[0].profit)
-                mt5.order_send(close_request)
-                account_info_dict = mt5.account_info()._asdict()
-                balance = account_info_dict['balance']
-                send_message_telegram_update_gain_balance(balance)
+            if NASDAQ_MT5 in symbol or DOW_MR5 in symbol or SP500_MT5 in symbol or DAX_MT5 in symbol:
+                lot = round(lot * i["lot"], 1)
+            else:
+                lot = round(lot * i["lot"], 2)
+
+            if symbol == "BTCUSD" or symbol == "ETHUSD" or symbol == APPLE_MT5 or symbol == TESLA_MT5 or symbol == NETFLIX_MT5 or symbol == GOOGLE_MT5 or symbol == AMAZON_MT5:
+                typeFilling = mt5.ORDER_FILLING_FOK
+            else:
+                typeFilling = mt5.ORDER_FILLING_IOC
+
+            buy_request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": lot,
+                "type": trade_type,
+                "price": price,
+                # "tp": tp,
+                # "sl": sl,
+                "magic": ea_magic_number,
+                "comment": i["strategyLong"],
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": typeFilling,
+            }
+
+            # send a trading request
+            send_message_telegram_open_trade(symbol, lot, action)
+            result = mt5.order_send(buy_request)
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                print("[x] order_send failed, retcode={}".format(result.retcode))
+                # request the result as a dictionary and display it element by element
+                result_dict = result._asdict()
+                for field in result_dict.keys():
+                    print("{}={}".format(field, result_dict[field]))
+                    # if this is a trading request structure, display it element by element as well
+                    if field == "request":
+                        traderequest_dict = result_dict[field]._asdict()
+                        for tradereq_filed in traderequest_dict:
+                            print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+
+            else:
+
+                print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
-def open_trade_martingale(action, symbol, listBroker):
+def open_trade_manual(action, symbol, listBroker, sizeRenko, lotInput):
     for i in listBroker:
 
         if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
@@ -149,18 +292,18 @@ def open_trade_martingale(action, symbol, listBroker):
         openOrders = mt5.positions_get(symbol=symbol)
         account_info_dict = mt5.account_info()._asdict()
         balance = account_info_dict['balance']
-        if len(openOrders) > 0:
-            close_trade(symbol, listBroker)
+        # if len(openOrders) > 0:
+        #    close_trade(symbol, listBroker)
 
         if action == 'BUY':
             trade_type = mt5.ORDER_TYPE_BUY
             price = mt5.symbol_info_tick(symbol).ask
-
-
+            tp, sl = no_round_tp(price, sizeRenko, action)
 
         elif action == 'SELL':
             trade_type = mt5.ORDER_TYPE_SELL
             price = mt5.symbol_info_tick(symbol).bid
+            tp, sl = no_round_tp(price, sizeRenko, action)
 
         if "XAU" in symbol:
             lot = round(balance / 200000, 2)
@@ -168,20 +311,29 @@ def open_trade_martingale(action, symbol, listBroker):
             lot = round(balance / 200000, 2)
         elif BTC_MT5 in symbol:
             lot = round(balance / 400000, 2)
-        elif NASDAQ_MT5 in symbol:
-            lot = round(balance / 50000, 1)
+        elif NASDAQ_MT5 in symbol or DOW_MR5 in symbol or JPN_MT5 in symbol:
+            lot = round(balance / 25000, 1)
         elif DAX_MT5 in symbol:
+            lot = round(balance / 25000, 1)
+        elif SP500_MT5 in symbol or FRA_MT5 in symbol or ESP_MT5 in symbol or AUS_MT5 in symbol:
             lot = round(balance / 50000, 1)
-        elif SP500_MT5 in symbol:
-            lot = round(balance / 100000, 1)
+        elif GOOGLE_MT5 in symbol or AMAZON_MT5 in symbol or TESLA_MT5 in symbol:
+            lot = 0.1
+        elif APPLE_MT5 in symbol:
+            lot = 1
+        elif NETFLIX_MT5 in symbol:
+            lot = 0.2
         else:
             lot = round(balance / 100000, 2)
 
-        lot = lot * i["lot"]
-        if symbols[symbol] > 0:
-            lot = lot * symbols[symbol]
+        if NASDAQ_MT5 in symbol or DOW_MR5 in symbol or SP500_MT5 in symbol or DAX_MT5 in symbol:
+            lot = round(lot * lotInput, 1)
+        elif "JPY" in symbol:
+            lot = round(lot * lotInput, 2)
+        else:
+            lot = round(lot * lotInput, 2)
 
-        if symbol == "BTCUSD" or symbol == "ETHUSD":
+        if symbol == "BTCUSD" or symbol == "ETHUSD" or symbol == APPLE_MT5 or symbol == TESLA_MT5 or symbol == NETFLIX_MT5 or symbol == GOOGLE_MT5 or symbol == AMAZON_MT5:
             typeFilling = mt5.ORDER_FILLING_FOK
         else:
             typeFilling = mt5.ORDER_FILLING_IOC
@@ -192,14 +344,16 @@ def open_trade_martingale(action, symbol, listBroker):
             "volume": lot,
             "type": trade_type,
             "price": price,
+            "tp": tp,
+            # "sl": sl,
             "magic": ea_magic_number,
-            "comment": "Scalping",
+            "comment": i["strategyManual"],
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": typeFilling,
         }
 
         # send a trading request
-        send_message_telegram_open_trade(symbol, lot)
+        send_message_telegram_open_trade(symbol, lot, action)
         result = mt5.order_send(buy_request)
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -218,87 +372,183 @@ def open_trade_martingale(action, symbol, listBroker):
             print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
-def close_trade_martingale(symbol, listBroker):
+def close_trade_follow(symbol, listBroker):
     for i in listBroker:
+        if date.today().weekday() == 4 and symbol != "BTCUSD" or date.today().weekday() < 5:
+            if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+                print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+                quit()
 
-        if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
-            print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
-            quit()
+            openOrders = mt5.positions_get(symbol=symbol)
 
-        openOrders = mt5.positions_get(symbol=symbol)
-        if len(openOrders) > 0:
+            if len(openOrders) > 0:
+                for order in openOrders:
+                    if order.comment == i["strategyLong"]:
 
-            order_type = openOrders[0].type
-            symbol = openOrders[0].symbol
-            volume = openOrders[0].volume
+                        order_type = order.type
+                        symbol = order.symbol
+                        volume = order.volume
 
-            if order_type == mt5.ORDER_TYPE_BUY:
-                order_type = mt5.ORDER_TYPE_SELL
-                price = mt5.symbol_info_tick(symbol).bid
-            else:
-                order_type = mt5.ORDER_TYPE_BUY
-                price = mt5.symbol_info_tick(symbol).ask
+                        if order_type == mt5.ORDER_TYPE_BUY:
+                            order_type = mt5.ORDER_TYPE_SELL
+                            price = mt5.symbol_info_tick(symbol).bid
+                        else:
+                            order_type = mt5.ORDER_TYPE_BUY
+                            price = mt5.symbol_info_tick(symbol).ask
 
-            if symbol == BTC_MT5:
-                typeFilling = mt5.ORDER_FILLING_FOK
-            else:
-                typeFilling = mt5.ORDER_FILLING_IOC
+                        if symbol == BTC_MT5:
+                            typeFilling = mt5.ORDER_FILLING_FOK
+                        else:
+                            typeFilling = mt5.ORDER_FILLING_IOC
 
-            close_request = {
-                "action": mt5.TRADE_ACTION_DEAL,
-                "symbol": symbol,
-                "volume": float(volume),
-                "type": order_type,
-                "position": openOrders[0].ticket,
-                "price": price,
-                "magic": 234000,
-                "comment": "Close trade",
-                "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": typeFilling,
-            }
-            if openOrders[0].profit < 0:
-                symbols[symbol] = symbols[symbol] + 1
-            else:
-                symbols[symbol] = 0
+                        close_request = {
+                            "action": mt5.TRADE_ACTION_DEAL,
+                            "symbol": symbol,
+                            "volume": float(volume),
+                            "type": order_type,
+                            "position": order.ticket,
+                            "price": price,
+                            "magic": 234000,
+                            "comment": order.comment,
+                            "type_time": mt5.ORDER_TIME_GTC,
+                            "type_filling": typeFilling,
+                        }
 
-            send_message_telegram_close_trade(symbol, openOrders[0].profit)
-            mt5.order_send(close_request)
-            account_info_dict = mt5.account_info()._asdict()
-            balance = account_info_dict['balance']
-            send_message_telegram_update_gain_balance(balance)
+                        mt5.order_send(close_request)
+                        account_info_dict = mt5.account_info()._asdict()
+                        balance = account_info_dict['balance']
+                        if order.comment == i["strategyLong"]:
+                            send_message_telegram_close_trade(symbol, order.profit)
+                            send_message_telegram_update_gain_balance(balance)
+
+
+def close_trade_scalping(symbol, listBroker):
+    for i in listBroker:
+        if date.today().weekday() == 4 and symbol != "BTCUSD" or date.today().weekday() < 5:
+            if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+                print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+                quit()
+
+            openOrders = mt5.positions_get(symbol=symbol)
+
+            if len(openOrders) > 0:
+                for order in openOrders:
+                    if order.comment == i["strategyShort"]:
+
+                        order_type = order.type
+                        symbol = order.symbol
+                        volume = order.volume
+
+                        if order_type == mt5.ORDER_TYPE_BUY:
+                            order_type = mt5.ORDER_TYPE_SELL
+                            price = mt5.symbol_info_tick(symbol).bid
+                        else:
+                            order_type = mt5.ORDER_TYPE_BUY
+                            price = mt5.symbol_info_tick(symbol).ask
+
+                        if symbol == BTC_MT5:
+                            typeFilling = mt5.ORDER_FILLING_FOK
+                        else:
+                            typeFilling = mt5.ORDER_FILLING_IOC
+
+                        close_request = {
+                            "action": mt5.TRADE_ACTION_DEAL,
+                            "symbol": symbol,
+                            "volume": float(volume),
+                            "type": order_type,
+                            "position": order.ticket,
+                            "price": price,
+                            "magic": 234000,
+                            "comment": order.comment,
+                            "type_time": mt5.ORDER_TIME_GTC,
+                            "type_filling": typeFilling,
+                        }
+
+                        mt5.order_send(close_request)
+                        account_info_dict = mt5.account_info()._asdict()
+                        balance = account_info_dict['balance']
 
 
 def round_sl_tp(price, sizeRenko, symbol, action):
     if action == "BUY":
         if "JPY" in symbol:
-            tp = round(price + sizeRenko, 1)
-            sl = round(price - sizeRenko * 1.6, 1)
-        elif  symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
-            tp = round(price + sizeRenko, -1)
-            sl = round(price - sizeRenko * 1.6, -1)
-        elif symbol == "XAUUSD":
+            tp = price + sizeRenko
+            sl = price - (sizeRenko * 2)
+        elif symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
             tp = round(price + sizeRenko)
-            sl = round(price - sizeRenko * 1.6)
+            sl = round(price - sizeRenko * 2)
+        elif symbol == "XAUUSD":
+            tp = price + sizeRenko
+            sl = price - (sizeRenko * 2)
         elif symbol == BTC_MT5:
-            tp = round(price + sizeRenko,-2)
-            sl = round(price - sizeRenko * 1.6,-2)
+            tp = round(price + sizeRenko, -2)
+            sl = round(price - sizeRenko * 2, -2)
         else:
-            tp = round(price + sizeRenko, 3)
-            sl = round(price - sizeRenko * 1.6, 3)
+            tp = price + sizeRenko
+            sl = price - (sizeRenko * 2)
     else:
-        if "JPY" in symbol :
-            tp = round(price - sizeRenko, 1)
-            sl = round(price + sizeRenko * 1.6, 1)
-        elif  symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
-            tp = round(price - sizeRenko, -1)
-            sl = round(price + sizeRenko * 1.6, -1)
+        if "JPY" in symbol:
+            tp = price - sizeRenko
+            sl = price + (sizeRenko * 2)
+        elif symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
+            tp = round(price - sizeRenko, )
+            sl = round(price + sizeRenko * 2)
         elif symbol == BTC_MT5:
             tp = round(price - sizeRenko, -2)
-            sl = round(price + sizeRenko * 1.6, -2)
+            sl = round(price + sizeRenko * 2, -2)
+        elif symbol == "XAUUSD":
+            tp = price - sizeRenko
+            sl = price + (sizeRenko * 2)
+        else:
+            tp = price - sizeRenko
+            sl = price + (sizeRenko * 2)
+    return tp, sl
+
+
+def round_tp(price, sizeRenko, symbol, action):
+    if action == "BUY":
+        if "JPY" in symbol:
+            tp = round(price + sizeRenko, 1)
+            sl = round(price - sizeRenko * 2, 1)
+        elif symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
+            tp = round(price + sizeRenko, -1)
+            sl = round(price - sizeRenko * 2, -1)
+        elif symbol == "XAUUSD":
+            tp = round(price + sizeRenko)
+            sl = round(price - sizeRenko * 2)
+        elif symbol == BTC_MT5:
+            tp = round(price + sizeRenko, -2)
+            sl = round(price - sizeRenko * 2, -2)
+        else:
+            tp = round(price + sizeRenko, 3)
+            sl = round(price - sizeRenko * 2, 3)
+    else:
+        if "JPY" in symbol:
+            tp = round(price - sizeRenko, 1)
+            sl = round(price + sizeRenko * 2, 1)
+        elif symbol == NASDAQ_MT5 or symbol == SP500_MT5 or symbol == DAX_MT5:
+            tp = round(price - sizeRenko, -1)
+            sl = round(price + sizeRenko * 2, -1)
+        elif symbol == BTC_MT5:
+            tp = round(price - sizeRenko, -2)
+            sl = round(price + sizeRenko * 2, -2)
         elif symbol == "XAUUSD":
             tp = float(round(price - sizeRenko))
-            sl = float(round(price + sizeRenko * 1.6))
+            sl = round(price + sizeRenko * 2)
         else:
             tp = round(price - sizeRenko, 3)
-            sl = round(price + sizeRenko * 1.6, 3)
+            sl = round(price + sizeRenko * 2, 3)
+
+    return tp, sl
+
+
+def no_round_tp(price, sizeRenko, action):
+    if action == "BUY":
+        tp = price + sizeRenko
+        sl = price - sizeRenko * 2
+
+    else:
+        tp = price - sizeRenko
+        sl = price + sizeRenko * 2
+
     return tp, sl

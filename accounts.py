@@ -1,9 +1,15 @@
+from constraints import LONG_STRATEGY, SHORT_STRATEGY, SCALPING_STRATEGY
+
 broker = {
-    "login": 827681,
+    "login": 212389,
     "server": "BRKHoldings-Demo",
-    "password": "7jwdqykj",
-    "comment": "Long Run",
-    "lot": 1
+    "password": "alessandro123",
+    "lot": 0.4,
+    "stopLossPercentage": 1.6,
+    "strategyLong" : LONG_STRATEGY,
+    "strategyShort" : SHORT_STRATEGY,
+    "strategyScalping" : SCALPING_STRATEGY,
+    "strategyManual" : "xmanual"
 }
 
 listBroker = [broker]
