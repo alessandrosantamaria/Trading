@@ -105,7 +105,7 @@ def open_trade_scalping(action, symbol, listBroker):
 
 def open_trade_stock(action, symbol, listBroker):
     if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
-            date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
+            date.today().weekday() == 6 and datetime.utcnow().hour >= 22) or eventFound != True:
         for i in listBroker:
 
             if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
@@ -194,7 +194,7 @@ def open_trade_stock(action, symbol, listBroker):
 
 def open_trade_follow(action, symbol, listBroker):
     if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
-            date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
+            date.today().weekday() == 6 and datetime.utcnow().hour >= 22) or eventFound != True:
         for i in listBroker:
 
             if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):

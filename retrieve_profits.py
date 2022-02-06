@@ -6,7 +6,7 @@ from accounts import listBroker
 from constraints import *
 
 
-def check_position_gain_scalping(listAccount,strategy):
+def check_position_scalping(listAccount,strategy):
     for singleAccount in listAccount:
         if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
                               password=singleAccount["password"]):
@@ -28,6 +28,6 @@ def check_position_gain_scalping(listAccount,strategy):
             print("Strategy {}:\nActual Profit: {} - Target: {}".format(strategy,round(profit, 2), round((balance * singleAccount["lot"] / 200),2)))
 
 
-check_position_gain_scalping(listBroker,SHORT_STRATEGY)
-check_position_gain_scalping(listBroker,LONG_STRATEGY)
-check_position_gain_scalping(listBroker, SCALPING_STRATEGY)
+check_position_scalping(listBroker,SHORT_STRATEGY)
+check_position_scalping(listBroker,LONG_STRATEGY)
+check_position_scalping(listBroker, SCALPING_STRATEGY)

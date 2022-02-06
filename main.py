@@ -1,11 +1,10 @@
 from flask import *
 
 from apscheduler.schedulers.background import BackgroundScheduler
-
-from check_position_gain import retrieve_position_ids, check_positionIds_close_orders, \
-    check_position_gain_scalping, check_position_gain_stock
+from check_position_gain import *
 
 from mt5_open_close_orders import *
+from retrieve_calendar import close_all_profit_and_no_trading
 from set_stop_loss import update_position_stop_loss, close_orders_after_target
 
 ids = []
@@ -29,14 +28,16 @@ def run_schedule_all_profit_target():
 
 
 def run_daily_report_follow():
-    send_daily_report(listBroker,LONG_STRATEGY)
+    send_daily_report(listBroker, LONG_STRATEGY)
 
 
 def run_daily_report_manual():
-    send_daily_report(listBroker,SHORT_STRATEGY)
+    send_daily_report(listBroker, SHORT_STRATEGY)
+
 
 def run_daily_report_fast():
-    send_daily_report(listBroker,SCALPING_STRATEGY)
+    send_daily_report(listBroker, SCALPING_STRATEGY)
+
 
 def run_telegram_close_order(close_orders=close_orders, ids=ids):
     ids = retrieve_position_ids(listBroker, ids)
@@ -44,15 +45,19 @@ def run_telegram_close_order(close_orders=close_orders, ids=ids):
     send_message_close_order(close_orders)
 
 
+def run_schedule_retrieve_calendar():
+    close_all_profit_and_no_trading(listBroker, datetime.now().date())
+
+
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
 sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
 sched.add_job(run_schedule_all_profit_target, trigger='cron', second='*/10', misfire_grace_time=5)
-#sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
+# sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 sched.add_job(run_schedule_check_gain_stock, trigger='cron', second='*/6', misfire_grace_time=5)
-# sched.add_job(run_daily_report_follow,trigger='cron', day='*/1')
 sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
+sched.add_job(run_schedule_retrieve_calendar, trigger='cron', day='*/1', hour='10')
 sched.add_job(run_telegram_close_order, trigger='cron', second='*/2', misfire_grace_time=5)
 sched.start()
 
@@ -110,11 +115,9 @@ def home():
 
     if strategy == LONG_STRATEGY:
         open_trade_follow(order, symbol, listBroker)
-    elif strategy == SHORT_STRATEGY:
-        open_trade_scalping(order, symbol, listBroker)
+    # open_trade_scalping(order, symbol, listBroker)
     elif strategy == SCALPING_STRATEGY:
         open_trade_stock(order, symbol, listBroker)
-
 
     print("***     END     ***")
     return message
