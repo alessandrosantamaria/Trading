@@ -2,7 +2,7 @@ from enum import Enum
 
 import constraints
 from accounts import listBroker
-from mt5_open_close_orders import  open_trade_manual
+from mt5_open_close_orders import  open_trade_manual_execution
 
 
 class Action(Enum):
@@ -33,4 +33,4 @@ elif "GER" in symbol:
 else:
     sizeRenko = 0.001
 
-open_trade_manual(action, symbol, listBroker, sizeRenko, lot)
+open_trade_manual_execution(action, symbol, listBroker, sizeRenko, lot)

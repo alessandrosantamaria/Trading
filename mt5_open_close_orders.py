@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 import MetaTrader5 as mt5
-from telegram import *
+from telegram_message import *
 import math
 
 ea_magic_number = 9986989  # if you want to give every bot a unique identifier
@@ -13,7 +13,7 @@ def get_info(symbol):
     return info
 
 
-def open_trade_scalping(action, symbol, listBroker):
+def open_trade_manual(action, symbol, listBroker):
     if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for i in listBroker:
@@ -44,12 +44,10 @@ def open_trade_scalping(action, symbol, listBroker):
                 lot = round(balance / 200000, 2)
             elif BTC_MT5 in symbol:
                 lot = round(balance / 400000, 2)
-            elif NASDAQ_MT5 in symbol or DOW_MR5 in symbol or JPN_MT5 in symbol:
-                lot = round(balance / 25000, 1)
-            elif DAX_MT5 in symbol:
-                lot = round(balance / 25000, 1)
-            elif SP500_MT5 in symbol or FRA_MT5 in symbol or ESP_MT5 in symbol or AUS_MT5 in symbol:
-                lot = round(balance / 50000, 1)
+            elif DAX_MT5 in symbol or DOW_MR5 in symbol or NASDAQ_MT5 in symbol:
+                lot = round(balance / 200000, 1)
+            elif SP500_MT5 in symbol :
+                lot = round(balance / 100000, 1)
             elif GOOGLE_MT5 in symbol or AMAZON_MT5 in symbol or TESLA_MT5 in symbol:
                 lot = 0.1
             elif APPLE_MT5 in symbol:
@@ -84,7 +82,7 @@ def open_trade_scalping(action, symbol, listBroker):
             }
 
             # send a trading request
-            send_message_telegram_open_trade(symbol, lot, action)
+            send_message_telegram_open_trade(symbol, lot, action,i["strategyShort"])
             result = mt5.order_send(buy_request)
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -103,7 +101,7 @@ def open_trade_scalping(action, symbol, listBroker):
                 print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
-def open_trade_stock(action, symbol, listBroker):
+def open_trade_scalp(action, symbol, listBroker):
     if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22) or eventFound != True:
         for i in listBroker:
@@ -133,12 +131,10 @@ def open_trade_stock(action, symbol, listBroker):
                 lot = round(balance / 200000, 2)
             elif BTC_MT5 in symbol:
                 lot = round(balance / 400000, 2)
-            elif NASDAQ_MT5 in symbol or DOW_MR5 in symbol or JPN_MT5 in symbol:
-                lot = round(balance / 25000, 1)
-            elif DAX_MT5 in symbol:
-                lot = round(balance / 25000, 1)
-            elif SP500_MT5 in symbol or FRA_MT5 in symbol or ESP_MT5 in symbol or AUS_MT5 in symbol:
-                lot = round(balance / 50000, 1)
+            elif DAX_MT5 in symbol or DOW_MR5 in symbol or NASDAQ_MT5 in symbol:
+                lot = round(balance / 200000, 1)
+            elif SP500_MT5 in symbol:
+                lot = round(balance / 100000, 1)
             elif GOOGLE_MT5 in symbol or AMAZON_MT5 in symbol or TESLA_MT5 in symbol:
                 lot = 0.1
             elif APPLE_MT5 in symbol:
@@ -149,9 +145,9 @@ def open_trade_stock(action, symbol, listBroker):
                 lot = round(balance / 100000, 2)
 
             if NASDAQ_MT5 in symbol or DOW_MR5 in symbol or SP500_MT5 in symbol or DAX_MT5 in symbol:
-                lot = round(lot * i["lot"]/2, 1)
+                lot = round(lot * i["lot"], 1)
             else:
-                lot = round(lot * i["lot"]/2, 2)
+                lot = round(lot * i["lot"], 2)
 
             if symbol == "BTCUSD" or symbol == "ETHUSD" or symbol == APPLE_MT5 or symbol == TESLA_MT5 or symbol == NETFLIX_MT5 or symbol == GOOGLE_MT5 or symbol == AMAZON_MT5:
                 typeFilling = mt5.ORDER_FILLING_FOK
@@ -173,7 +169,7 @@ def open_trade_stock(action, symbol, listBroker):
             }
 
             # send a trading request
-            # send_message_telegram_open_trade(symbol, lot, action)
+            send_message_telegram_open_trade(symbol, lot, action,i["strategyScalping"])
             result = mt5.order_send(buy_request)
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -223,12 +219,10 @@ def open_trade_follow(action, symbol, listBroker):
                 lot = round(balance / 200000, 2)
             elif BTC_MT5 in symbol:
                 lot = round(balance / 400000, 2)
-            elif NASDAQ_MT5 in symbol or DOW_MR5 in symbol or JPN_MT5 in symbol:
-                lot = round(balance / 25000, 1)
-            elif DAX_MT5 in symbol:
-                lot = round(balance / 25000, 1)
-            elif SP500_MT5 in symbol or FRA_MT5 in symbol or ESP_MT5 in symbol or AUS_MT5 in symbol:
-                lot = round(balance / 50000, 1)
+            elif DAX_MT5 in symbol or DOW_MR5 in symbol or NASDAQ_MT5 in symbol:
+                lot = round(balance / 200000, 1)
+            elif SP500_MT5 in symbol:
+                lot = round(balance / 100000, 1)
             elif GOOGLE_MT5 in symbol or AMAZON_MT5 in symbol or TESLA_MT5 in symbol:
                 lot = 0.1
             elif APPLE_MT5 in symbol:
@@ -263,7 +257,7 @@ def open_trade_follow(action, symbol, listBroker):
             }
 
             # send a trading request
-            send_message_telegram_open_trade(symbol, lot, action)
+            send_message_telegram_open_trade(symbol, lot, action,i["strategyLong"])
             result = mt5.order_send(buy_request)
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -282,7 +276,7 @@ def open_trade_follow(action, symbol, listBroker):
                 print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
-def open_trade_manual(action, symbol, listBroker, sizeRenko, lotInput):
+def open_trade_manual_execution(action, symbol, listBroker, sizeRenko, lotInput):
     for i in listBroker:
 
         if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
@@ -353,7 +347,7 @@ def open_trade_manual(action, symbol, listBroker, sizeRenko, lotInput):
         }
 
         # send a trading request
-        send_message_telegram_open_trade(symbol, lot, action)
+        send_message_telegram_open_trade(symbol, lot, action,i["strategyManual"])
         result = mt5.order_send(buy_request)
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print("[x] order_send failed, retcode={}".format(result.retcode))

@@ -39,18 +39,18 @@ def retrieve_calendar(date):
 
 def close_all_profit_and_no_trading(listBroker, date):
     for singleAccount in listBroker:
-
+        print("\n-----Check Economic Calendar: {}-----\n".format(
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
         retrieve_calendar(date)
+        print("Event Found : {}".format(constraints.eventFound))
         if constraints.eventFound:
             if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
                                   password=singleAccount["password"]):
                 print("initialize() failed for account {} , error code =".format(singleAccount["login"]),
                       mt5.last_error())
                 quit()
-            print("\n-----Check Orders for Take profit for All positions verification: {}-----\n".format(
-                datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
-            account_info_dict = mt5.account_info()._asdict()
-            balance = account_info_dict['balance']
+
+
             openOrders = mt5.positions_get()
             for order in openOrders:
 
@@ -84,6 +84,3 @@ def close_all_profit_and_no_trading(listBroker, date):
                 }
 
                 mt5.order_send(close_request)
-
-
-close_all_profit_and_no_trading(listBroker, datetime(2022, 3, 4).date())

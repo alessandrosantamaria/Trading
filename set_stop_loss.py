@@ -6,7 +6,7 @@ import requests
 import close_all_positions
 from accounts import listBroker
 from constraints import TOKEN_TELEGRAM, CHAT_ID_TELEGRAM
-from telegram import send_message_telegram_set_stop_loss
+from telegram_message import send_message_telegram_set_stop_loss
 
 
 def update_position_stop_loss(listAccount):
@@ -200,7 +200,7 @@ def close_orders_after_target(listAccount):
 
             if profit > (balance * singleAccount["lot"]) / 20:
                 close_all_positions.close_all_trade_with_profit(singleAccount)
-                message = '** Close All Trades **\nProfit: {}$\n{}'.format(profit, '\N{money-mouth face}')
+                message = '** Close All Follow Trades **\nProfit: {}$\n{}'.format(profit, '\N{money-mouth face}')
                 requests.post(
                     'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM,
                                                                                            CHAT_ID_TELEGRAM,

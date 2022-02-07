@@ -7,8 +7,8 @@ from retrieve_history import daily_report
 
 
 
-def send_message_telegram_open_trade(symbol, lot, action):
-    message = '** Open Trade **\nSymbol: {}\nLot: {}\nAction: {}\n{}'.format(symbol, lot, action,
+def send_message_telegram_open_trade(symbol, lot, action,strategy):
+    message = '** Open Trade **\nSymbol: {}\nLot: {}\nAction: {}\nStrategy: {}\n{}'.format(symbol, lot, action,strategy,
                                                                              '\N{call me hand}')
     requests.post(
         'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
@@ -67,22 +67,22 @@ def send_message_close_order(closeOrders):
         send_message_telegram_update_gain_balance(balance)
 
 
-def send_scalping_stock(profit):
+def send_scalping_scalping(profit):
     if profit > 0:
-        message = "** Close all Stock positions **\nProfit :{}$\n{}".format(round(profit, 2), '\N{money-mouth face}')
+        message = "** Close all Scalping positions **\nProfit :{}$\n{}".format(round(profit, 2), '\N{money-mouth face}')
         requests.post(
             'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                    message))
 
 
-def send_scalping_profit(profit):
+def send_manual_profit(profit):
     if profit > 0:
-        message = "** Close all scalping position **\nProfit :{}$\n{}".format(round(profit, 2), '\N{money-mouth face}')
+        message = "** Close all Manual position **\nProfit :{}$\n{}".format(round(profit, 2), '\N{money-mouth face}')
         requests.post(
             'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                    message))
     elif profit < 0:
-        message = "** Close all scalping position **\nProfit :{}$\n{}".format(round(profit, 2),
+        message = "** Close all Manual position **\nProfit :{}$\n{}".format(round(profit, 2),
                                                                               '\N{loudly crying face}')
         requests.post(
             'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,

@@ -3,8 +3,8 @@ from datetime import date, datetime
 import MetaTrader5 as mt5
 
 import constraints
-from mt5_open_close_orders import open_trade_scalping, close_trade_follow
-from telegram import send_scalping_profit, send_scalping_stock
+from mt5_open_close_orders import open_trade_manual, close_trade_follow
+from telegram_message import send_manual_profit, send_scalping_scalping
 
 
 def check_gain(listAccount):
@@ -89,7 +89,7 @@ def check_positionIds_close_orders(listAccount, listPositionIds, listCloseOrders
         return listCloseOrders, listPositionIds
 
 
-def check_position_gain_scalping(listAccount):
+def check_position_gain_manual(listAccount):
     if date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for singleAccount in listAccount:
@@ -104,7 +104,7 @@ def check_position_gain_scalping(listAccount):
             balance = account_info_dict['balance']
             profit = 0
 
-            targetProfit = (balance * singleAccount["lot"] / 80)
+            targetProfit = (balance * singleAccount["lot"] / 50)
             for order in openOrders:
 
                 if order.comment == singleAccount["strategyShort"]:
@@ -140,10 +140,10 @@ def check_position_gain_scalping(listAccount):
 
                         mt5.order_send(close_request)
 
-                send_scalping_profit(profit)
+                send_manual_profit(profit)
 
 
-def check_position_gain_stock(listAccount):
+def check_position_gain_scalping(listAccount):
     if date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for singleAccount in listAccount:
@@ -157,7 +157,7 @@ def check_position_gain_stock(listAccount):
             profit = 0
             account_info_dict = mt5.account_info()._asdict()
             balance = account_info_dict['balance']
-            targetProfit = (balance * singleAccount["lot"] / 400)
+            targetProfit = (balance * singleAccount["lot"] / 300)
             for order in openOrders:
 
                 if order.comment == singleAccount["strategyScalping"]:
@@ -193,4 +193,4 @@ def check_position_gain_stock(listAccount):
 
                         mt5.order_send(close_request)
 
-                send_scalping_stock(profit)
+                send_scalping_scalping(profit)

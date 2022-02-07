@@ -16,11 +16,11 @@ def run_schedule_stop_loss():
 
 
 def run_schedule_check_gain_stock():
-    check_position_gain_stock(listBroker)
+    check_position_gain_scalping(listBroker)
 
 
 def run_schedule_check_gain():
-    check_position_gain_scalping(listBroker)
+    check_position_gain_manual(listBroker)
 
 
 def run_schedule_all_profit_target():
@@ -52,7 +52,7 @@ def run_schedule_retrieve_calendar():
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
 sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
 sched.add_job(run_schedule_all_profit_target, trigger='cron', second='*/10', misfire_grace_time=5)
-# sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
+sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 sched.add_job(run_schedule_check_gain_stock, trigger='cron', second='*/6', misfire_grace_time=5)
 sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
@@ -76,7 +76,7 @@ def home():
     print("***PLACING ORDER***")
     print(message)
 
-    if symbol == "GER30":
+    if symbol == "GER40":
         symbol = DAX_MT5
     elif symbol == "US100":
         symbol = NASDAQ_MT5
@@ -115,9 +115,10 @@ def home():
 
     if strategy == LONG_STRATEGY:
         open_trade_follow(order, symbol, listBroker)
-    # open_trade_scalping(order, symbol, listBroker)
+    elif strategy == SHORT_STRATEGY:
+        open_trade_manual(order, symbol, listBroker)
     elif strategy == SCALPING_STRATEGY:
-        open_trade_stock(order, symbol, listBroker)
+        open_trade_scalp(order, symbol, listBroker)
 
     print("***     END     ***")
     return message
