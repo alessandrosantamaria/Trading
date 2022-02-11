@@ -10,8 +10,8 @@ class Action(Enum):
     Sell = "SELL"
 
 
-symbol = constraints.EURCHF
-action = Action.Buy.value
+symbol = constraints.EURUSD
+action = Action.Sell.value
 lot = 1
 
 if "JPY" in symbol:

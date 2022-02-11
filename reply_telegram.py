@@ -4,8 +4,9 @@ import mt5
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 # Enable logging
-from accounts import listBroker
+from accounts import *
 from constraints import *
+from retrieve_history import report_telegram
 from retrieve_profits import check_position_scalping_telegram
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -24,6 +25,12 @@ def profit(update, context):
     update.message.reply_text(message)
     message = check_position_scalping_telegram(listBroker, SCALPING_STRATEGY)
     update.message.reply_text(message)
+
+
+def report(update, context):
+    message = report_telegram(broker)
+    for m in message:
+        update.message.reply_text(m)
 
 
 def close(update, context):
@@ -75,8 +82,12 @@ def close(update, context):
 
 def help(update, context):
     """Send a message when the command /help is issued."""
+    update.message.reply_text('Command to check the current profit or loss for each Strategy applied')
     update.message.reply_text('/profit')
+    update.message.reply_text('Command to close all orders for each Strategy')
     update.message.reply_text('/close')
+    update.message.reply_text('Command to check the current balance of each Strategy')
+    update.message.reply_text('/report')
 
 
 def echo(update, context):
@@ -102,6 +113,8 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("profit", profit))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("close", close))
+    dp.add_handler(CommandHandler("report", report))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text, echo))

@@ -2,44 +2,9 @@ from datetime import date, datetime
 
 import MetaTrader5 as mt5
 
-import constraints
-from mt5_open_close_orders import open_trade_manual, close_trade_follow
-from telegram_message import send_manual_profit, send_scalping_scalping
-
-
-def check_gain(listAccount):
-    if date.today().weekday() < 5 or (date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
-        for singleAccount in listAccount:
-            if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
-                                  password=singleAccount["password"]):
-                print("initialize() failed for account {} , error code =".format(singleAccount["login"]),
-                      mt5.last_error())
-                quit()
-
-            openOrders = mt5.positions_get()
-            account_info_dict = mt5.account_info()._asdict()
-            balance = account_info_dict['balance']
-
-            if len(openOrders) > 0:
-                for order in openOrders:
-                    if order.symbol != constraints.SP500_MT5 and order.symbol != constraints.DOW_MR5 \
-                            and order.symbol != constraints.DAX_MT5 and order.symbol != constraints.AUS_MT5 \
-                            and order.symbol != constraints.BTCUSD and order.symbol != constraints.NASDAQ_MT5 \
-                            and order.symbol != constraints.FRA_MT5 and order.symbol != constraints.ESP_MT5 \
-                            and order.symbol != constraints.XAUUSD:
-                        if order.profit > float(
-                                str((balance * (order.volume * 2) * 0.1 / 100))[:4]):
-                            close_trade_follow(order.symbol, listAccount)
-                            # if order.profit < float(str((balance * singleAccount["lot"] * 0.2 / 100) * -1)[:4]):
-                            #     print(
-                            #         " * Closing order {} in broker account {} due to loss {} is greater then {}$ :((!".format(
-                            #             order.symbol, singleAccount["login"], round(order.profit, 2),
-                            #             abs(balance * singleAccount["lot"] * 0.2 / 100) * -1))
-
-                            print(
-                                " * Closing order {} in broker account {} due to profit {} is greater then {}$ :))!".format(
-                                    order.symbol, singleAccount["login"], abs(round(order.profit, 2)),
-                                    abs(balance * (order.volume * 2) * 0.1 / 100)))
+from constraints import *
+from mt5_open_close_orders import *
+from telegram_message import send_manual_profit, send_scalping_scalping, send_message_telegram_open_trade
 
 
 def retrieve_position_ids(listAccount, listPositionIds):
@@ -54,13 +19,12 @@ def retrieve_position_ids(listAccount, listPositionIds):
         openOrders = mt5.positions_get()
         if len(openOrders) > 0:
             for order in openOrders:
-                if order.identifier not in listPositionIds and order.tp != 0 and order.comment == singleAccount[
-                    'strategyManual']:
+                if order.identifier not in listPositionIds and order.tp != 0 and order.comment == MANUAL_STRATEGY:
                     listPositionIds.append(order.identifier)
         return listPositionIds
 
 
-def check_positionIds_close_orders(listAccount, listPositionIds, listCloseOrders):
+def check_position_Ids_close_orders(listAccount, listPositionIds, listCloseOrders):
     for singleAccount in listAccount:
         if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
                               password=singleAccount["password"]):
@@ -89,7 +53,7 @@ def check_positionIds_close_orders(listAccount, listPositionIds, listCloseOrders
         return listCloseOrders, listPositionIds
 
 
-def check_position_gain_manual(listAccount):
+def check_position_gain_for_momentum_strategy(listAccount):
     if date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for singleAccount in listAccount:
@@ -107,24 +71,26 @@ def check_position_gain_manual(listAccount):
             targetProfit = (balance * singleAccount["lot"] / 50)
             for order in openOrders:
 
-                if order.comment == singleAccount["strategyShort"]:
+                if order.comment == SHORT_STRATEGY:
                     profit = profit + order.profit
 
             if profit >= targetProfit:
                 for order in openOrders:
-                    if order.comment == singleAccount["strategyShort"]:
+                    if order.comment == SHORT_STRATEGY:
                         order_type = order.type
                         symbol = order.symbol
                         volume = order.volume
+                        action = ''
 
                         if order_type == mt5.ORDER_TYPE_BUY:
                             order_type = mt5.ORDER_TYPE_SELL
                             price = mt5.symbol_info_tick(symbol).bid
+                            action = 'BUY'
 
                         else:
                             order_type = mt5.ORDER_TYPE_BUY
                             price = mt5.symbol_info_tick(symbol).ask
-
+                            action = 'SELL'
                         close_request = {
                             "action": mt5.TRADE_ACTION_DEAL,
                             "symbol": symbol,
@@ -133,7 +99,7 @@ def check_position_gain_manual(listAccount):
                             "position": order.ticket,
                             "price": price,
                             "magic": 234000,
-                            "comment": singleAccount["strategyShort"],
+                            "comment": SHORT_STRATEGY,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_IOC,
                         }
@@ -143,7 +109,7 @@ def check_position_gain_manual(listAccount):
                 send_manual_profit(profit)
 
 
-def check_position_gain_scalping(listAccount):
+def check_position_gain_for_scalp_strategy(listAccount):
     if date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for singleAccount in listAccount:
@@ -160,23 +126,26 @@ def check_position_gain_scalping(listAccount):
             targetProfit = (balance * singleAccount["lot"] / 300)
             for order in openOrders:
 
-                if order.comment == singleAccount["strategyScalping"]:
+                if order.comment == SCALPING_STRATEGY:
                     profit = profit + order.profit
 
             if profit >= targetProfit:
                 for order in openOrders:
-                    if order.comment == singleAccount["strategyScalping"]:
+                    if order.comment == SCALPING_STRATEGY:
                         order_type = order.type
                         symbol = order.symbol
                         volume = order.volume
+                        action = ''
 
                         if order_type == mt5.ORDER_TYPE_BUY:
                             order_type = mt5.ORDER_TYPE_SELL
                             price = mt5.symbol_info_tick(symbol).bid
+                            action = 'BUY'
 
                         else:
                             order_type = mt5.ORDER_TYPE_BUY
                             price = mt5.symbol_info_tick(symbol).ask
+                            action = 'SELL'
 
                         close_request = {
                             "action": mt5.TRADE_ACTION_DEAL,
@@ -186,11 +155,13 @@ def check_position_gain_scalping(listAccount):
                             "position": order.ticket,
                             "price": price,
                             "magic": 234000,
-                            "comment": singleAccount["strategyShort"],
+                            "comment": SCALPING_STRATEGY,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_FOK,
                         }
 
                         mt5.order_send(close_request)
+                        if order.profit > 0:
+                            open_trade(action, symbol, listAccount, SCALPING_STRATEGY)
 
-                send_scalping_scalping(profit)
+                    send_scalping_scalping(profit)

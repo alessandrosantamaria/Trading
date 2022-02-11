@@ -73,6 +73,11 @@ def send_scalping_scalping(profit):
         requests.post(
             'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                    message))
+    else:
+        message = "** Close all Scalping positions **\nLoss :{}$\n{}".format(round(profit, 2), '\N{loudly crying face}')
+        requests.post(
+            'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                                   message))
 
 
 def send_manual_profit(profit):

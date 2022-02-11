@@ -6,7 +6,7 @@ from accounts import listBroker
 from constraints import *
 
 
-def check_position_scalping(listAccount,strategy):
+def check_position_scalping(listAccount, strategy):
     for singleAccount in listAccount:
         if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
                               password=singleAccount["password"]):
@@ -21,13 +21,20 @@ def check_position_scalping(listAccount,strategy):
             if order.comment == strategy:
                 profit = profit + order.profit
         if strategy == SHORT_STRATEGY:
-             print("Strategy {}:\nActual Profit: {} - Target: {}".format(strategy,round(profit,2),round((balance * singleAccount["lot"] / 40),2)))
+            print("Strategy {}:\nActual Profit: {} - Target: {}".format(strategy, round(profit, 2),
+                                                                        round((balance * singleAccount["lot"] / 40),
+                                                                              2)))
         elif strategy == LONG_STRATEGY:
-            print("Strategy {}:\nActual Profit: {} - Target: {}".format(strategy,round(profit, 2), round((balance * singleAccount["lot"] / 20),2)))
+            print("Strategy {}:\nActual Profit: {} - Target: {}".format(strategy, round(profit, 2),
+                                                                        round((balance * singleAccount["lot"] / 20),
+                                                                              2)))
         else:
-            print("Strategy {}:\nActual Profit: {} - Target: {}".format(strategy,round(profit, 2), round((balance * singleAccount["lot"] / 300),2)))
+            print("Strategy {}:\nActual Profit: {} - Target: {}".format(strategy, round(profit, 2),
+                                                                        round((balance * singleAccount["lot"] / 300),
+                                                                              2)))
 
-def check_position_scalping_telegram(listAccount,strategy):
+
+def check_position_scalping_telegram(listAccount, strategy):
     for singleAccount in listAccount:
         if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
                               password=singleAccount["password"]):
@@ -43,10 +50,14 @@ def check_position_scalping_telegram(listAccount,strategy):
                 profit = profit + order.profit
 
         if strategy == SHORT_STRATEGY:
-            return "Strategy {}:\nActual Profit: {} - Target: {}".format(strategy,round(profit,2),round((balance * singleAccount["lot"] / 40),2))
+            return "Strategy {}:\nActual Profit: {} - Target: {}".format(strategy, round(profit, 2),
+                                                                         round((balance * singleAccount["lot"] / 50),
+                                                                               2))
         elif strategy == LONG_STRATEGY:
-            return "Strategy {}:\nActual Profit: {} - Target: {}".format(strategy,round(profit, 2), round((balance * singleAccount["lot"] / 20),2))
+            return "Strategy {}:\nActual Profit: {} - Target: {}".format(strategy, round(profit, 2),
+                                                                         round((balance * singleAccount["lot"] / 20),
+                                                                               2))
 
         else:
-            return "Strategy {}:\nActual Profit: {} - Target: {}".format(strategy,round(profit, 2), round((balance * singleAccount["lot"] / 300),2))
-
+            return "Strategy {}:\nActual Profit: {} - Target: {} - Loss: {}".format(strategy, round(profit, 2), round(
+                (balance * singleAccount["lot"] / 300), 2), round((balance * singleAccount["lot"] / 600), 2) * -1)

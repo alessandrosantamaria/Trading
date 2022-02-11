@@ -1,7 +1,7 @@
 import MetaTrader5 as mt5
 from datetime import datetime
 
-from constraints import BTC_MT5
+from constraints import BTC_MT5, LONG_STRATEGY
 
 
 def close_all_trade_with_profit(singleAccount):
@@ -15,20 +15,23 @@ def close_all_trade_with_profit(singleAccount):
     balance = account_info_dict['balance']
     openOrders = mt5.positions_get()
     for order in openOrders:
-        if order.comment == singleAccount["strategyLong"]:
+        if order.comment == LONG_STRATEGY:
             print(
                 "Closing order {} in broker account {} since that the sum of all trades {} are greater then {}!".format(
                     order.symbol, singleAccount["login"], account_info_dict['profit'], balance * 0.05))
             order_type = order.type
             symbol = order.symbol
             volume = order.volume
+            action = ''
 
             if order_type == mt5.ORDER_TYPE_BUY:
                 order_type = mt5.ORDER_TYPE_SELL
                 price = mt5.symbol_info_tick(symbol).bid
+                action = 'BUY'
             else:
                 order_type = mt5.ORDER_TYPE_BUY
                 price = mt5.symbol_info_tick(symbol).ask
+                action = 'SELL'
 
             if symbol == BTC_MT5:
                 typeFilling = mt5.ORDER_FILLING_FOK

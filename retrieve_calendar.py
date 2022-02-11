@@ -50,7 +50,6 @@ def close_all_profit_and_no_trading(listBroker, date):
                       mt5.last_error())
                 quit()
 
-
             openOrders = mt5.positions_get()
             for order in openOrders:
 

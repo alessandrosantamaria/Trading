@@ -86,4 +86,5 @@ XAUUSD = "XAUUSD"
 LONG_STRATEGY = "follow"
 SHORT_STRATEGY = "manual"
 SCALPING_STRATEGY = "scalp"
+MANUAL_STRATEGY = 'xmanual'
 eventFound = False

@@ -57,9 +57,7 @@ def sum_results_trades_sessions(listTrades, symbol):
         print("*********")
 
 
-
-
-def daily_report(account,strategy):
+def daily_report(account, strategy):
     if not mt5.initialize(login=account["login"], server=account["server"], password=account["password"]):
         print("initialize() failed for account {} , error code =".format(account), mt5.last_error())
         quit()
@@ -94,7 +92,8 @@ def daily_report(account,strategy):
             loss = loss + trade['profit']
     account_info_dict = mt5.account_info()._asdict()
     balance = account_info_dict['balance']
-    message = 'Report {} {}\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\nBalance : {}'.format(strategy,
+    message = 'Report {} {}\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\nBalance : {}'.format(
+        strategy,
         from_date.date(),
         number_trades_profit, round(profit, 2),
 
@@ -103,16 +102,6 @@ def daily_report(account,strategy):
         round(profit + loss, 2),
         balance)
     return message
-
-
-
-
-
-
-
-
-
-
 
 
 def sum_results_for_all_symbols(account):
@@ -193,7 +182,7 @@ def historical_report(account):
     if not mt5.initialize(login=account["login"], server=account["server"], password=account["password"]):
         print("initialize() failed for account {} , error code =".format(account), mt5.last_error())
         quit()
-    from_date = datetime(2020, 1, 1)
+    from_date = datetime(2021, 2, 10)
     to_date = datetime.now()
     # get deals for symbols whose names contain "GBP" within a specified interval
     deals = mt5.history_deals_get(from_date, to_date)
@@ -210,6 +199,10 @@ def historical_report(account):
     total_profit_stock = 0
     total_loss_stock = 0
     total_number_trades_loss_stock = 0
+    total_number_trades_profit_personal = 0
+    total_profit_personal = 0
+    total_loss_personal = 0
+    total_number_trades_loss_personal = 0
     for deal in deals:
         dict = {'time': deal.time, 'symbol': deal.symbol, 'profit': deal.profit, 'order': deal.order}
         if datetime.fromtimestamp(dict['time']).date() not in dates:
@@ -233,6 +226,10 @@ def historical_report(account):
         profit_stock = 0
         loss_stock = 0
         number_trades_loss_stock = 0
+        number_trades_profit_personal = 0
+        profit_personal = 0
+        loss_personal = 0
+        number_trades_loss_personal = 0
         for deal in deals:
             if deal.comment != 'Deposit':
                 dict = {'position_id': deal.position_id, 'time': deal.time, 'symbol': deal.symbol,
@@ -240,7 +237,7 @@ def historical_report(account):
                 if dict['profit'] != 0.0:
                     orders = mt5.history_orders_get(position=dict['position_id'])
                     for order in orders:
-                        if order.comment == LONG_STRATEGY or order.comment == SCALPING_STRATEGY or order.comment == SHORT_STRATEGY:
+                        if order.comment == LONG_STRATEGY or order.comment == SCALPING_STRATEGY or order.comment == SHORT_STRATEGY or 'tp' in order.comment:
                             dict['comment'] = order.comment
                             dict_deals.append(dict)
                             break
@@ -276,6 +273,16 @@ def historical_report(account):
                 loss_stock = loss_stock + trade['profit']
                 total_number_trades_loss_stock = total_number_trades_loss_stock + 1
                 total_loss_stock = total_loss_stock + trade['profit']
+            elif trade['profit'] > 0 and trade['symbol'] != '' and 'tp' in trade['comment']:
+                number_trades_profit_personal = number_trades_profit_personal + 1
+                profit_personal = trade['profit'] + profit_personal
+                total_number_trades_profit_personal = total_number_trades_profit_personal + 1
+                total_profit_personal = trade['profit'] + total_profit_personal
+            elif trade['profit'] < 0 and trade['symbol'] != '' and 'tp' in trade['comment']:
+                number_trades_loss_personal = number_trades_loss_personal + 1
+                loss_personal = loss_personal + trade['profit']
+                total_number_trades_loss_personal = total_number_trades_loss_personal + 1
+                total_loss_personal = total_loss_personal + trade['profit']
         print("Date {}\n".format(from_date.date()))
         print(
             'Report Follow Strategy:\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
@@ -287,7 +294,7 @@ def historical_report(account):
                 round(profit_follow + loss_follow, 2)
             ))
         print(
-            'Report Manual Strategy:\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+            'Report Momentum Strategy:\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
 
                 number_trades_profit_manual, round(profit_manual, 2),
                 number_trades_loss_manual,
@@ -295,12 +302,20 @@ def historical_report(account):
                 round(profit_manual + loss_manual, 2)
             ))
         print(
-            'Report Fast Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+            'Report Scalping Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
 
                 number_trades_profit_stock, round(profit_stock, 2),
                 number_trades_loss_stock,
                 round(loss_stock, 2),
                 round(profit_stock + loss_stock, 2)
+            ))
+        print(
+            'Report Manual Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+
+                number_trades_profit_personal, round(profit_personal, 2),
+                number_trades_loss_personal,
+                round(loss_personal, 2),
+                round(profit_personal + loss_personal, 2)
             ))
     print("**********************************")
     print(
@@ -312,7 +327,7 @@ def historical_report(account):
             round(total_profit + total_loss, 2)
         ))
     print(
-        'Report Total Manual Strategy:\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+        'Report Total Momentum Strategy:\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
 
             total_number_trades_profit_manual, round(total_profit_manual, 2),
             total_number_trades_loss_manual,
@@ -320,13 +335,130 @@ def historical_report(account):
             round(total_profit_manual + total_loss_manual, 2)
         ))
     print(
-        'Report Total Fast Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+        'Report Total Scalping Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
 
             total_number_trades_profit_stock, round(total_profit_stock, 2),
             total_number_trades_loss_stock,
             round(total_loss_stock, 2),
             round(total_profit_stock + total_loss_stock, 2)
         ))
+    print(
+        'Report Total Manual Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+
+            total_number_trades_profit_personal, round(total_profit_personal, 2),
+            total_number_trades_loss_personal,
+            round(total_loss_personal, 2),
+            round(total_profit_personal + total_loss_personal, 2)
+        ))
     print("**********************************")
 
-daily_report(broker,LONG_STRATEGY)
+
+def report_telegram(account):
+    if not mt5.initialize(login=account["login"], server=account["server"], password=account["password"]):
+        print("initialize() failed for account {} , error code =".format(account), mt5.last_error())
+        quit()
+    from_date = datetime(2021, 2, 10)
+    to_date = datetime.now()
+    message = []
+    # get deals for symbols whose names contain "GBP" within a specified interval
+    deals = mt5.history_deals_get(from_date, to_date)
+    dates = []
+    total_number_trades_profit = 0
+    total_profit = 0
+    total_loss = 0
+    total_number_trades_loss = 0
+    total_number_trades_profit_manual = 0
+    total_profit_manual = 0
+    total_loss_manual = 0
+    total_number_trades_loss_manual = 0
+    total_number_trades_profit_stock = 0
+    total_profit_stock = 0
+    total_loss_stock = 0
+    total_number_trades_loss_stock = 0
+    total_number_trades_profit_personal = 0
+    total_profit_personal = 0
+    total_loss_personal = 0
+    total_number_trades_loss_personal = 0
+    for deal in deals:
+        dict = {'time': deal.time, 'symbol': deal.symbol, 'profit': deal.profit, 'order': deal.order}
+        if datetime.fromtimestamp(dict['time']).date() not in dates:
+            dates.append(datetime.fromtimestamp(dict['time']).date())
+
+    for date in dates:
+        from_date = datetime(date.year, date.month, date.day)
+        to_date = from_date + timedelta(days=1)
+        # get deals for symbols whose names contain "GBP" within a specified interval
+        deals = mt5.history_deals_get(from_date, to_date)
+        dict_deals = []
+        for deal in deals:
+            if deal.comment != 'Deposit':
+                dict = {'position_id': deal.position_id, 'time': deal.time, 'symbol': deal.symbol,
+                        'profit': deal.profit, 'order': deal.order, 'volume': deal.volume}
+                if dict['profit'] != 0.0:
+                    orders = mt5.history_orders_get(position=dict['position_id'])
+                    for order in orders:
+                        if order.comment == LONG_STRATEGY or order.comment == SCALPING_STRATEGY or order.comment == SHORT_STRATEGY or 'tp' in order.comment:
+                            dict['comment'] = order.comment
+                            dict_deals.append(dict)
+                            break
+                dict_deals.sort(key=lambda item: item.get("order"))
+        for trade in dict_deals:
+            if trade['profit'] > 0 and trade['symbol'] != '' and trade['comment'] == LONG_STRATEGY:
+                total_number_trades_profit = total_number_trades_profit + 1
+                total_profit = total_profit + trade['profit']
+            elif trade['profit'] < 0 and trade['symbol'] != '' and trade['comment'] == LONG_STRATEGY:
+                total_number_trades_loss = total_number_trades_loss + 1
+                total_loss = total_loss + trade['profit']
+            elif trade['profit'] > 0 and trade['symbol'] != '' and trade['comment'] == SHORT_STRATEGY:
+                total_number_trades_profit_manual = total_number_trades_profit_manual + 1
+                total_profit_manual = trade['profit'] + total_profit_manual
+            elif trade['profit'] < 0 and trade['symbol'] != '' and trade['comment'] == SHORT_STRATEGY:
+                total_number_trades_loss_manual = total_number_trades_loss_manual + 1
+                total_loss_manual = total_loss_manual + trade['profit']
+            elif trade['profit'] > 0 and trade['symbol'] != '' and trade['comment'] == SCALPING_STRATEGY:
+                total_number_trades_profit_stock = total_number_trades_profit_stock + 1
+                total_profit_stock = trade['profit'] + total_profit_stock
+            elif trade['profit'] < 0 and trade['symbol'] != '' and trade['comment'] == SCALPING_STRATEGY:
+                total_number_trades_loss_stock = total_number_trades_loss_stock + 1
+                total_loss_stock = total_loss_stock + trade['profit']
+            elif trade['profit'] > 0 and trade['symbol'] != '' and 'tp' in trade['comment']:
+                total_number_trades_profit_personal = total_number_trades_profit_personal + 1
+                total_profit_personal = trade['profit'] + total_profit_personal
+            elif trade['profit'] < 0 and trade['symbol'] != '' and 'tp' in trade['comment']:
+                total_number_trades_loss_personal = total_number_trades_loss_personal + 1
+                total_loss_personal = total_loss_personal + trade['profit']
+
+    message.append(
+        'Report Total Follow Strategy:\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+
+            total_number_trades_profit, round(total_profit, 2),
+            total_number_trades_loss,
+            round(total_loss, 2),
+            round(total_profit + total_loss, 2)
+        ))
+    message.append(
+        'Report Total Momentum Strategy:\nNumber Trades in Profit : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+
+            total_number_trades_profit_manual, round(total_profit_manual, 2),
+            total_number_trades_loss_manual,
+            round(total_loss_manual, 2),
+            round(total_profit_manual + total_loss_manual, 2)
+        ))
+    message.append(
+        'Report Total Scalping Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+
+            total_number_trades_profit_stock, round(total_profit_stock, 2),
+            total_number_trades_loss_stock,
+            round(total_loss_stock, 2),
+            round(total_profit_stock + total_loss_stock, 2)
+        ))
+    message.append(
+        'Report Total Manual Strategy:\nNumber Trades in Profit Scalping : {}\nProfit : {}\nNumber Trades in Loss : {}\nLoss : {}\nNet Trades {}\n'.format(
+
+            total_number_trades_profit_personal, round(total_profit_personal, 2),
+            total_number_trades_loss_personal,
+            round(total_loss_personal, 2),
+            round(total_profit_personal + total_loss_personal, 2)
+        ))
+
+    return message

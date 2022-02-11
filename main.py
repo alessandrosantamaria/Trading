@@ -5,26 +5,26 @@ from check_position_gain import *
 
 from mt5_open_close_orders import *
 from retrieve_calendar import close_all_profit_and_no_trading
-from set_stop_loss import update_position_stop_loss, close_orders_after_target
+from set_stop_loss import update_position_stop_loss_for_follow_strategy, close_orders_after_target_for_follow_strategy
 
 ids = []
 close_orders = []
 
 
 def run_schedule_stop_loss():
-    update_position_stop_loss(listBroker)
+    update_position_stop_loss_for_follow_strategy(listBroker)
 
 
-def run_schedule_check_gain_stock():
-    check_position_gain_scalping(listBroker)
+def run_schedule_check_gain_scapling():
+    check_position_gain_for_scalp_strategy(listBroker)
 
 
 def run_schedule_check_gain():
-    check_position_gain_manual(listBroker)
+    check_position_gain_for_momentum_strategy(listBroker)
 
 
 def run_schedule_all_profit_target():
-    close_orders_after_target(listBroker)
+    close_orders_after_target_for_follow_strategy(listBroker)
 
 
 def run_daily_report_follow():
@@ -41,7 +41,7 @@ def run_daily_report_fast():
 
 def run_telegram_close_order(close_orders=close_orders, ids=ids):
     ids = retrieve_position_ids(listBroker, ids)
-    close_orders, ids = check_positionIds_close_orders(listBroker, ids, close_orders)
+    close_orders, ids = check_position_Ids_close_orders(listBroker, ids, close_orders)
     send_message_close_order(close_orders)
 
 
@@ -53,7 +53,7 @@ sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
 sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
 sched.add_job(run_schedule_all_profit_target, trigger='cron', second='*/10', misfire_grace_time=5)
 sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
-sched.add_job(run_schedule_check_gain_stock, trigger='cron', second='*/6', misfire_grace_time=5)
+sched.add_job(run_schedule_check_gain_scapling, trigger='cron', second='*/6', misfire_grace_time=5)
 sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
@@ -69,7 +69,6 @@ def home():
     json_data = request.json
     symbol = str(json_data["symbol"])
     order = str(json_data["order"]).upper()
-    sizeRenko = float(json_data["sizeRenko"])
     strategy = str(json_data["strategy"])
 
     message = symbol + " - " + order
@@ -113,12 +112,7 @@ def home():
     elif symbol == "FB":
         symbol = FB_MT5
 
-    if strategy == LONG_STRATEGY:
-        open_trade_follow(order, symbol, listBroker)
-    elif strategy == SHORT_STRATEGY:
-        open_trade_manual(order, symbol, listBroker)
-    elif strategy == SCALPING_STRATEGY:
-        open_trade_scalp(order, symbol, listBroker)
+    open_trade(order, symbol, listBroker, strategy)
 
     print("***     END     ***")
     return message
