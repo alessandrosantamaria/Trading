@@ -1,0 +1,173 @@
+{
+"symbol" : "{{ticker}}",
+"order" : "buy"
+}
+
+{
+"symbol" : "{{ticker}}",
+"order" : "sell"
+}
+
+
+{
+"symbol" : "{{ticker}}",
+"order" : "SELL"
+}
+
+{
+"order" : "{{strategy.order.action}}" ,
+"symbol" : "{{ticker}}",
+"comment" : "{{strategy.order.comment}}"
+}
+
+{
+"order" : "{{strategy.order.action}}" ,
+"symbol" : "{{ticker}}",
+"strategy" : "Renko Scalping"
+}
+
+
+
+50000
+Name     : Alessandro Santamaria
+Type     : BRK Holding Ltd
+Server   : BRKHoldings-Demo
+Login    : 829277
+Password : hldjq5io
+Investor : uz1vnhjm
+
+
+
+
+
+
+
+
+
+
+
+
+Name     : Alessandro Santamaria
+Type     : BRK Holding Ltd
+Server   : BRKHoldings-Demo
+Login    : 826741
+Password : bmz8krcs
+Investor : mqzoi3gg
+
+
+
+
+
+
+
+FXDD
+Name     : Alessandro Santamaria
+Type     : EUR
+Server   : FXDD-Demo
+Login    : 2100037158
+Password : 8yxsaves
+Investor : runr0cyy
+
+Name     : Alessandro Santamaria
+Type     : Demo Pro Account
+Server   : PepperstoneUK-Demo
+Login    : 62002387
+Password : i4jwlacd
+Investor : ud7lgssi
+
+
+
+long_signal  = sma(close,1)>ema(close,200) and sma(close,1)>hma(close,200) and rsi(close,14)>60 and crossover(signal,0) 
+short_signal = sma(close,1)<ema(close,200) and sma(close,1)<hma(close,200) and rsi(close,14)<40 and crossunder(signal,0) 
+long_contr_signal  = crossover(macd,signal) and rsi(close,14)<40 and sma(close,1)<hma(close,200) and sma(close,1)<ema(close,200)
+short_contr_signal = crossunder(macd,signal) and rsi(close,14)>60 and sma(close,1)>hma(close,200) and sma(close,1)>ema(close,200) 
+
+exit_long_signal = crossunder(macd,0)
+exit_short_signal = crossunder(rsi(close,14),35)
+exit_long_contr_signal = crossunder(rsi(close,14),50)
+exit_short_contr_signal = crossover(rsi(close,14),50)
+
+
+
+
+https://dashboard.ngrok.com/get-started/your-authtoken
+ngrok http 5000 
+
+netstat -ano | findstr :5000
+taskkill /PID typeyourPIDhere /F
+
+XAUUSD : 36158.35
+USDZAR : 41408.69
+EURZAR : 37225.45
+GBPZAR : 37186.14
+EURUSC : 17106.21
+GBPUSD : 23306.22
+USDCAD : 19574.64
+NZDUSD : 28449.31
+AUDUSD : 29182.43
+AUDCAD : 19959.43
+AUDCHF : 25615.95
+AUDJPY : 28316.55
+AUDNZD : 13142.24
+CADCHF : 20735.08
+CADJPY : 24460.88
+CADCHF : 16304.72
+EURAUD : 22028.66
+EURCAD : 18354.14
+EURGBP : 18542.71
+EURNZD : 22539.17
+EURJPY : 17643.78
+GBPAUD : 21728.07
+GBPCAD : 19487.58
+GBPCHF : 21101.99
+GBPJPY : 23504.54
+GBPNZD : 22263.48
+NZDCAD : 20734.36
+NZDCHF : 25875.86
+NZDJPY : 28370.55
+
+Incrocio medie 1 - 30
+
+
+80.337 - 80.511
+
+
+
+361285 36124
+
+
+1 Controllare il trend Rialzista o Ribassista
+2 Controllare Bande di Bollinger - Toccare la nuvola
+3 Controllare RSI (Oversold or Overbought)
+4 Controllare MACD - Incrocio medie 
+
+
+4 Simple but Effective Price Patterns!
+Yellow = Inside Bar – Breakout Patterns
+Orange = Outside Bar – Breakout Patterns
+Green/Red = Pin Bars
+Aqua/Fuchsia = Shaved Bars
+
+
+//@version=4
+study(shorttitle="Renko Scalping", title="Renko Scalping", overlay=true)
+
+long = close>open and close[1]>open[1] and close[2]>open[2] and close[3]>open[3] and close[4]>open[4] and close[5]<open[5]
+short = close<open and close[1]<open[1] and close[2]<open[2] and close[3]<open[3] and close[4]<open[4] and close[5]>open[5] 
+
+alertcondition(long, title="buy alarm", message="buy signal!!!")
+alertcondition(short, title="sell alarm", message="sell signal!!!")
+
+
+plotshape(long, style=shape.labelup, location=location.belowbar, color=color.blue, size=size.tiny, title="buy label", text="BUY", textcolor=color.white)
+plotshape(short, style=shape.labeldown, location=location.abovebar, color=color.red, size=size.tiny, title="sell label", text="SELL", textcolor=color.white)
+
+//if (long)
+//	strategy.entry("LONG", strategy.long)
+//else if (short)
+//	strategy.entry("SHORT", strategy.short)
+
+
+//strategy.close("LONG", when = short)
+
+//strategy.close("SHORT", when = long)
