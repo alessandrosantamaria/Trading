@@ -213,8 +213,9 @@ def close_trade(symbol, listBroker, strategy):
                         mt5.order_send(close_request)
                         account_info_dict = mt5.account_info()._asdict()
                         balance = account_info_dict['balance']
-                        send_message_telegram_close_trade(symbol, order.profit)
-                        send_message_telegram_update_gain_balance(balance)
+                        if strategy != SCALPING_STRATEGY:
+                            send_message_telegram_close_trade(symbol, order.profit)
+                            send_message_telegram_update_gain_balance(balance)
 
 
 def round_sl_tp(price, sizeRenko, symbol, action):

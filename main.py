@@ -15,7 +15,7 @@ def run_schedule_stop_loss():
     update_position_stop_loss_for_follow_strategy(listBroker)
 
 
-def run_schedule_check_gain_scapling():
+def run_schedule_check_gain_scalping():
     check_position_gain_for_scalp_strategy(listBroker)
 
 
@@ -53,7 +53,7 @@ sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
 sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
 sched.add_job(run_schedule_all_profit_target, trigger='cron', second='*/10', misfire_grace_time=5)
 sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
-sched.add_job(run_schedule_check_gain_scapling, trigger='cron', second='*/6', misfire_grace_time=5)
+sched.add_job(run_schedule_check_gain_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
 sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')

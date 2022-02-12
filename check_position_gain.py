@@ -135,7 +135,6 @@ def check_position_gain_for_scalp_strategy(listAccount):
                         order_type = order.type
                         symbol = order.symbol
                         volume = order.volume
-                        action = ''
 
                         if order_type == mt5.ORDER_TYPE_BUY:
                             order_type = mt5.ORDER_TYPE_SELL
