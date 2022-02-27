@@ -10,9 +10,12 @@ class Action(Enum):
     Sell = "SELL"
 
 
-symbol = constraints.EURUSD
+symbol = constraints.CADJPY
 action = Action.Sell.value
-lot = 1
+lot = 2
+
+tp = 89.83
+sl = 90.68
 
 if "JPY" in symbol:
     sizeRenko = 0.1
@@ -33,4 +36,6 @@ elif "GER" in symbol:
 else:
     sizeRenko = 0.001
 
-open_trade_manual_execution(action, symbol, listBroker, sizeRenko, lot)
+
+
+open_trade_manual_execution(action, symbol, listBroker,tp,sl, lot)
