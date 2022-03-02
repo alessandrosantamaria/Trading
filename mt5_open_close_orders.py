@@ -359,12 +359,12 @@ def round_tp(price, sizeRenko, symbol, action):
 
 def no_round_tp(price, sizeRenko, action):
     if action == "BUY":
-        tp = price + sizeRenko
-        sl = price - sizeRenko * 2
+        tp = price + sizeRenko * 2
+        sl = price - sizeRenko
 
     else:
-        tp = price - sizeRenko
-        sl = price + sizeRenko * 2
+        tp = price - sizeRenko * 2
+        sl = price + sizeRenko
 
     return tp, sl
 
