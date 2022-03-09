@@ -104,6 +104,7 @@ def check_position_gain_for_momentum_strategy(listAccount):
                         }
 
                         mt5.order_send(close_request)
+                        open_trade(action,symbol,listAccount,MANUAL_STRATEGY)
 
                 send_manual_profit(profit)
 
