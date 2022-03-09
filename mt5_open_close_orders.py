@@ -193,7 +193,7 @@ def open_trade_scalping(action, symbol, listBroker, renko):
             if DAX_MT5 in symbol:
                 lot = 0.1
             else:
-                lot = lot_calculation(symbol) * 2
+                lot = lot_calculation(symbol) * 4
 
             if symbol == "BTCUSD" or symbol == "ETHUSD":
                 typeFilling = mt5.ORDER_FILLING_FOK
@@ -206,8 +206,8 @@ def open_trade_scalping(action, symbol, listBroker, renko):
                 "volume": lot,
                 "type": trade_type,
                 "price": price,
-                "tp": tp,
-                "sl": sl,
+                #"tp": tp,
+                #"sl": sl,
                 "magic": ea_magic_number,
                 "comment": SCALPING_STRATEGY,
                 "type_time": mt5.ORDER_TIME_GTC,
@@ -377,7 +377,7 @@ def lot_calculation(symbol):
     elif "ZAR" in symbol or DAX_MT5 in symbol:
         lot = round(balance / 200000, 2)
     elif BTC_MT5 in symbol:
-        lot = round(balance / 400000, 2)
+        lot = round(balance / 200000, 2)
     elif DOW_MR5 in symbol or NASDAQ_MT5 in symbol:
         lot = round(balance / 50000, 1)
     elif SP500_MT5 in symbol:

@@ -1,3 +1,4 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from flask import *
 
 from apscheduler.schedulers.background import BackgroundScheduler

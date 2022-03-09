@@ -2,7 +2,7 @@ import csv
 
 from datetime import datetime
 
-import mt5
+import MetaTrader5 as mt5
 
 import constraints
 from accounts import broker, listBroker

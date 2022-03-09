@@ -71,12 +71,12 @@ def check_position_gain_for_momentum_strategy(listAccount):
             targetProfit = (balance * singleAccount["lot"] / 10)
             for order in openOrders:
 
-                if order.comment == SHORT_STRATEGY:
+
                     profit = profit + order.profit
 
             if profit >= targetProfit:
                 for order in openOrders:
-                    if order.comment == SHORT_STRATEGY:
+
                         order_type = order.type
                         symbol = order.symbol
                         volume = order.volume

@@ -1,6 +1,6 @@
 import datetime
 
-import mt5
+import MetaTrader5 as mt5
 
 from accounts import listBroker
 from constraints import *

@@ -1,6 +1,6 @@
 import logging
 
-import mt5
+import MetaTrader5 as mt5
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 # Enable logging
@@ -33,7 +33,100 @@ def report(update, context):
         update.message.reply_text(m)
 
 
-def close(update, context):
+def close_scalping(update, context):
+    """Send a message when the command /start is issued."""
+    for i in listBroker:
+
+        if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+            print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+            quit()
+
+            openOrders = mt5.positions_get()
+            profit = 0
+            for order in openOrders:
+                if order.comment == SCALPING_STRATEGY:
+                    profit = order.profit + profit
+                    order_type = order.type
+                    symbol = order.symbol
+                    volume = order.volume
+
+                    if order_type == mt5.ORDER_TYPE_BUY:
+                        order_type = mt5.ORDER_TYPE_SELL
+                        price = mt5.symbol_info_tick(symbol).bid
+                    else:
+                        order_type = mt5.ORDER_TYPE_BUY
+                        price = mt5.symbol_info_tick(symbol).ask
+
+                    if symbol == BTC_MT5:
+                        typeFilling = mt5.ORDER_FILLING_FOK
+                    else:
+                        typeFilling = mt5.ORDER_FILLING_IOC
+
+                    close_request = {
+                        "action": mt5.TRADE_ACTION_DEAL,
+                        "symbol": symbol,
+                        "volume": float(volume),
+                        "type": order_type,
+                        "position": order.ticket,
+                        "price": price,
+                        "magic": 234000,
+                        "comment": order.comment,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": typeFilling,
+                    }
+
+                    mt5.order_send(close_request)
+            message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(SCALPING_STRATEGY, profit, '\N{money-mouth face}')
+            update.message.reply_text(message)
+
+
+def close_manual(update, context):
+    """Send a message when the command /start is issued."""
+    for i in listBroker:
+
+        if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+            print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+            quit()
+
+            openOrders = mt5.positions_get()
+            profit = 0
+            for order in openOrders:
+                if order.comment == MANUAL_STRATEGY:
+                    profit = order.profit + profit
+                    order_type = order.type
+                    symbol = order.symbol
+                    volume = order.volume
+
+                    if order_type == mt5.ORDER_TYPE_BUY:
+                        order_type = mt5.ORDER_TYPE_SELL
+                        price = mt5.symbol_info_tick(symbol).bid
+                    else:
+                        order_type = mt5.ORDER_TYPE_BUY
+                        price = mt5.symbol_info_tick(symbol).ask
+
+                    if symbol == BTC_MT5:
+                        typeFilling = mt5.ORDER_FILLING_FOK
+                    else:
+                        typeFilling = mt5.ORDER_FILLING_IOC
+
+                    close_request = {
+                        "action": mt5.TRADE_ACTION_DEAL,
+                        "symbol": symbol,
+                        "volume": float(volume),
+                        "type": order_type,
+                        "position": order.ticket,
+                        "price": price,
+                        "magic": 234000,
+                        "comment": order.comment,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": typeFilling,
+                    }
+
+                    mt5.order_send(close_request)
+            message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(MANUAL_STRATEGY, profit,
+                                                                          '\N{money-mouth face}')
+            update.message.reply_text(message)
+def close_all(update, context):
     """Send a message when the command /start is issued."""
     for i in listBroker:
         strategies = [LONG_STRATEGY, SHORT_STRATEGY, SCALPING_STRATEGY]
@@ -78,16 +171,18 @@ def close(update, context):
                     mt5.order_send(close_request)
             message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(strategy, profit, '\N{money-mouth face}')
             update.message.reply_text(message)
-
-
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Command to check the current profit or loss for each Strategy applied')
     update.message.reply_text('/profit')
     update.message.reply_text('Command to close all orders for each Strategy')
-    update.message.reply_text('/close')
+    update.message.reply_text('/close_all')
     update.message.reply_text('Command to check the current balance of each Strategy')
     update.message.reply_text('/report')
+    update.message.reply_text('Command to close all orders for Manual Strategy')
+    update.message.reply_text('/close_manual')
+    update.message.reply_text('Command to close all orders for Scalping Strategy')
+    update.message.reply_text('/close_scalp')
 
 
 def echo(update, context):
@@ -113,9 +208,10 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("profit", profit))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("close", close))
+    dp.add_handler(CommandHandler("close_all", close_all))
     dp.add_handler(CommandHandler("report", report))
-
+    dp.add_handler(CommandHandler("close_scalp", close_scalping))
+    dp.add_handler(CommandHandler("close_manual", close_manual))
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text, echo))
 
