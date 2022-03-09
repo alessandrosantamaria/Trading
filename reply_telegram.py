@@ -88,7 +88,7 @@ def close_manual(update, context):
         openOrders = mt5.positions_get()
         profit = 0
         for order in openOrders:
-            if order.comment == MANUAL_STRATEGY:
+            if order.comment == SHORT_STRATEGY:
                 profit = order.profit + profit
                 order_type = order.type
                 symbol = order.symbol
@@ -120,7 +120,7 @@ def close_manual(update, context):
                 }
 
                 mt5.order_send(close_request)
-        message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(MANUAL_STRATEGY, profit,
+        message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(SHORT_STRATEGY, profit,
                                                                       '\N{money-mouth face}')
         update.message.reply_text(message)
 

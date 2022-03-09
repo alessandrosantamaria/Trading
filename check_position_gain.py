@@ -70,12 +70,12 @@ def check_position_gain_for_momentum_strategy(listAccount):
 
             targetProfit = (balance * singleAccount["lot"] / 10)
             for order in openOrders:
-                if order.comment == MANUAL_STRATEGY:
+                if order.comment == SHORT_STRATEGY:
                     profit = profit + order.profit
 
             if profit >= targetProfit:
                 for order in openOrders:
-                    if order.comment == MANUAL_STRATEGY:
+                    if order.comment == SHORT_STRATEGY:
                         order_type = order.type
                         symbol = order.symbol
                         volume = order.volume
@@ -104,7 +104,7 @@ def check_position_gain_for_momentum_strategy(listAccount):
                         }
 
                         mt5.order_send(close_request)
-                        open_trade(action,symbol,listAccount,MANUAL_STRATEGY)
+                        open_trade(action,symbol,listAccount,SHORT_STRATEGY)
 
                 send_manual_profit(profit)
 
