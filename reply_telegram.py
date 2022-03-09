@@ -6,6 +6,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 # Enable logging
 from accounts import *
 from constraints import *
+from mt5_open_close_orders import open_trade
 from retrieve_history import report_telegram
 from retrieve_profits import check_position_scalping_telegram
 
@@ -97,9 +98,11 @@ def close_manual(update, context):
                 if order_type == mt5.ORDER_TYPE_BUY:
                     order_type = mt5.ORDER_TYPE_SELL
                     price = mt5.symbol_info_tick(symbol).bid
+                    action = 'BUY'
                 else:
                     order_type = mt5.ORDER_TYPE_BUY
                     price = mt5.symbol_info_tick(symbol).ask
+                    action = 'SELL'
 
                 if symbol == BTC_MT5:
                     typeFilling = mt5.ORDER_FILLING_FOK
@@ -120,6 +123,7 @@ def close_manual(update, context):
                 }
 
                 mt5.order_send(close_request)
+                open_trade(action, symbol, listBroker, SHORT_STRATEGY)
         message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(SHORT_STRATEGY, profit,
                                                                       '\N{money-mouth face}')
         update.message.reply_text(message)
