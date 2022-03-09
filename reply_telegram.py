@@ -41,43 +41,40 @@ def close_scalping(update, context):
             print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
             quit()
 
-            openOrders = mt5.positions_get()
-            profit = 0
-            for order in openOrders:
-                if order.comment == SCALPING_STRATEGY:
-                    profit = order.profit + profit
-                    order_type = order.type
-                    symbol = order.symbol
-                    volume = order.volume
-
-                    if order_type == mt5.ORDER_TYPE_BUY:
-                        order_type = mt5.ORDER_TYPE_SELL
-                        price = mt5.symbol_info_tick(symbol).bid
-                    else:
-                        order_type = mt5.ORDER_TYPE_BUY
-                        price = mt5.symbol_info_tick(symbol).ask
-
-                    if symbol == BTC_MT5:
-                        typeFilling = mt5.ORDER_FILLING_FOK
-                    else:
-                        typeFilling = mt5.ORDER_FILLING_IOC
-
-                    close_request = {
-                        "action": mt5.TRADE_ACTION_DEAL,
-                        "symbol": symbol,
-                        "volume": float(volume),
-                        "type": order_type,
-                        "position": order.ticket,
-                        "price": price,
-                        "magic": 234000,
-                        "comment": order.comment,
-                        "type_time": mt5.ORDER_TIME_GTC,
-                        "type_filling": typeFilling,
-                    }
-
-                    mt5.order_send(close_request)
-            message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(SCALPING_STRATEGY, profit, '\N{money-mouth face}')
-            update.message.reply_text(message)
+        openOrders = mt5.positions_get()
+        profit = 0
+        for order in openOrders:
+            if order.comment == SCALPING_STRATEGY:
+                profit = order.profit + profit
+                order_type = order.type
+                symbol = order.symbol
+                volume = order.volume
+                if order_type == mt5.ORDER_TYPE_BUY:
+                    order_type = mt5.ORDER_TYPE_SELL
+                    price = mt5.symbol_info_tick(symbol).bid
+                else:
+                    order_type = mt5.ORDER_TYPE_BUY
+                    price = mt5.symbol_info_tick(symbol).ask
+                if symbol == BTC_MT5:
+                    typeFilling = mt5.ORDER_FILLING_FOK
+                else:
+                    typeFilling = mt5.ORDER_FILLING_IOC
+                close_request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": symbol,
+                    "volume": float(volume),
+                    "type": order_type,
+                    "position": order.ticket,
+                    "price": price,
+                    "magic": 234000,
+                    "comment": order.comment,
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": typeFilling,
+                }
+                mt5.order_send(close_request)
+        message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(SCALPING_STRATEGY, profit,
+                                                                      '\N{money-mouth face}')
+        update.message.reply_text(message)
 
 
 def close_manual(update, context):
@@ -88,44 +85,46 @@ def close_manual(update, context):
             print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
             quit()
 
-            openOrders = mt5.positions_get()
-            profit = 0
-            for order in openOrders:
-                if order.comment == MANUAL_STRATEGY:
-                    profit = order.profit + profit
-                    order_type = order.type
-                    symbol = order.symbol
-                    volume = order.volume
+        openOrders = mt5.positions_get()
+        profit = 0
+        for order in openOrders:
+            if order.comment == MANUAL_STRATEGY:
+                profit = order.profit + profit
+                order_type = order.type
+                symbol = order.symbol
+                volume = order.volume
 
-                    if order_type == mt5.ORDER_TYPE_BUY:
-                        order_type = mt5.ORDER_TYPE_SELL
-                        price = mt5.symbol_info_tick(symbol).bid
-                    else:
-                        order_type = mt5.ORDER_TYPE_BUY
-                        price = mt5.symbol_info_tick(symbol).ask
+                if order_type == mt5.ORDER_TYPE_BUY:
+                    order_type = mt5.ORDER_TYPE_SELL
+                    price = mt5.symbol_info_tick(symbol).bid
+                else:
+                    order_type = mt5.ORDER_TYPE_BUY
+                    price = mt5.symbol_info_tick(symbol).ask
 
-                    if symbol == BTC_MT5:
-                        typeFilling = mt5.ORDER_FILLING_FOK
-                    else:
-                        typeFilling = mt5.ORDER_FILLING_IOC
+                if symbol == BTC_MT5:
+                    typeFilling = mt5.ORDER_FILLING_FOK
+                else:
+                    typeFilling = mt5.ORDER_FILLING_IOC
 
-                    close_request = {
-                        "action": mt5.TRADE_ACTION_DEAL,
-                        "symbol": symbol,
-                        "volume": float(volume),
-                        "type": order_type,
-                        "position": order.ticket,
-                        "price": price,
-                        "magic": 234000,
-                        "comment": order.comment,
-                        "type_time": mt5.ORDER_TIME_GTC,
-                        "type_filling": typeFilling,
-                    }
+                close_request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": symbol,
+                    "volume": float(volume),
+                    "type": order_type,
+                    "position": order.ticket,
+                    "price": price,
+                    "magic": 234000,
+                    "comment": order.comment,
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": typeFilling,
+                }
 
-                    mt5.order_send(close_request)
-            message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(MANUAL_STRATEGY, profit,
-                                                                          '\N{money-mouth face}')
-            update.message.reply_text(message)
+                mt5.order_send(close_request)
+        message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(MANUAL_STRATEGY, profit,
+                                                                      '\N{money-mouth face}')
+        update.message.reply_text(message)
+
+
 def close_all(update, context):
     """Send a message when the command /start is issued."""
     for i in listBroker:
@@ -171,6 +170,8 @@ def close_all(update, context):
                     mt5.order_send(close_request)
             message = '** Close All {} Trades **\nProfit: {}$\n{}'.format(strategy, profit, '\N{money-mouth face}')
             update.message.reply_text(message)
+
+
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Command to check the current profit or loss for each Strategy applied')
