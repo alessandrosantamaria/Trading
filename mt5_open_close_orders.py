@@ -114,8 +114,8 @@ def open_trade(action, symbol, listBroker, strategy):
 
             openOrders = mt5.positions_get(symbol=symbol)
 
-            if len(openOrders) > 0:
-                close_trade(symbol, listBroker, strategy)
+          #  if len(openOrders) > 0:
+          #      close_trade(symbol, listBroker, strategy)
 
             if action == 'BUY':
                 trade_type = mt5.ORDER_TYPE_BUY
@@ -130,7 +130,7 @@ def open_trade(action, symbol, listBroker, strategy):
             if DAX_MT5 in symbol:
                 lot = 0.1
             else:
-                lot = lot_calculation(symbol)
+                lot = round(lot_calculation(symbol) / 2,2)
 
             if symbol == "BTCUSD" or symbol == "ETHUSD":
                 typeFilling = mt5.ORDER_FILLING_FOK
@@ -183,44 +183,7 @@ def open_trade_scalping(action, symbol, listBroker, renko):
             openOrders = mt5.positions_get(symbol=symbol)
             orderFound = False
 
-            if len(openOrders) > 0:
-                for order in openOrders:
-                    if order.comment == SCALPING_STRATEGY:
-                        orderFound = True
-                        order_type = order.type
-                        symbol = order.symbol
-                        volume = order.volume
 
-                        if order_type == mt5.ORDER_TYPE_BUY:
-                            order_type = mt5.ORDER_TYPE_SELL
-                            price = mt5.symbol_info_tick(symbol).bid
-                        else:
-                            order_type = mt5.ORDER_TYPE_BUY
-                            price = mt5.symbol_info_tick(symbol).ask
-
-                        if symbol == BTC_MT5:
-                            typeFilling = mt5.ORDER_FILLING_FOK
-                        else:
-                            typeFilling = mt5.ORDER_FILLING_IOC
-
-                        close_request = {
-                            "action": mt5.TRADE_ACTION_DEAL,
-                            "symbol": symbol,
-                            "volume": float(volume),
-                            "type": order_type,
-                            "position": order.ticket,
-                            "price": price,
-                            "magic": 234000,
-                            "comment": order.comment,
-                            "type_time": mt5.ORDER_TIME_GTC,
-                            "type_filling": typeFilling,
-                        }
-
-                        mt5.order_send(close_request)
-                        account_info_dict = mt5.account_info()._asdict()
-                        balance = account_info_dict['balance']
-                        send_message_telegram_close_trade(symbol, order.profit)
-                        send_message_telegram_update_gain_balance(balance)
             if orderFound == False:
                 if action == 'BUY':
                     trade_type = mt5.ORDER_TYPE_BUY
@@ -234,8 +197,10 @@ def open_trade_scalping(action, symbol, listBroker, renko):
 
                 if DAX_MT5 in symbol:
                     lot = 0.1
+                elif SP500_MT5 in symbol:
+                    lot = 0.5
                 else:
-                    lot = lot_calculation(symbol) * 2
+                    lot = lot_calculation(symbol)
 
                 if symbol == "BTCUSD" or symbol == "ETHUSD":
                     typeFilling = mt5.ORDER_FILLING_FOK
@@ -248,8 +213,8 @@ def open_trade_scalping(action, symbol, listBroker, renko):
                     "volume": lot,
                     "type": trade_type,
                     "price": price,
-                    # "tp": tp,
-                    # "sl": sl,
+                    "tp": tp,
+                    "sl": sl,
                     "magic": ea_magic_number,
                     "comment": SCALPING_STRATEGY,
                     "type_time": mt5.ORDER_TIME_GTC,
@@ -401,11 +366,11 @@ def round_tp(price, sizeRenko, symbol, action):
 
 def no_round_tp(price, sizeRenko, action):
     if action == "BUY":
-        tp = price + sizeRenko * 2
+        tp = price + sizeRenko
         sl = price - sizeRenko
 
     else:
-        tp = price - sizeRenko * 2
+        tp = price - sizeRenko
         sl = price + sizeRenko
 
     return tp, sl

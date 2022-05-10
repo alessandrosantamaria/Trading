@@ -4,7 +4,7 @@ import MetaTrader5 as mt5
 
 from constraints import *
 from mt5_open_close_orders import *
-from telegram_message import send_manual_profit, send_scalping_scalping, send_message_telegram_open_trade
+from telegram_message import send_scalping_scalping, send_message_telegram_open_trade
 
 
 def retrieve_position_ids(listAccount, listPositionIds):
@@ -19,7 +19,7 @@ def retrieve_position_ids(listAccount, listPositionIds):
         openOrders = mt5.positions_get()
         if len(openOrders) > 0:
             for order in openOrders:
-                if order.identifier not in listPositionIds and order.tp != 0 and order.comment == MANUAL_STRATEGY:
+                if order.identifier not in listPositionIds and order.tp != 0 and order.comment == SCALPING_STRATEGY:
                     listPositionIds.append(order.identifier)
         return listPositionIds
 
@@ -53,7 +53,7 @@ def check_position_Ids_close_orders(listAccount, listPositionIds, listCloseOrder
         return listCloseOrders, listPositionIds
 
 
-def check_position_gain_for_momentum_strategy(listAccount):
+def check_position_gain_for_scalping_strategy(listAccount):
     if date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for singleAccount in listAccount:
@@ -64,21 +64,24 @@ def check_position_gain_for_momentum_strategy(listAccount):
                 quit()
 
             openOrders = mt5.positions_get()
-            account_info_dict = mt5.account_info()._asdict()
-            balance = account_info_dict['balance']
+
             profit = 0
-
-            targetProfit = (balance * singleAccount["lot"] / 10)
+            listSymbols = []
             for order in openOrders:
-                if order.comment == SHORT_STRATEGY:
-                    profit = profit + order.profit
+                if order.symbol not in listSymbols:
+                    listSymbols.append(order.symbol)
 
-            if profit >= targetProfit:
-                for order in openOrders:
-                    if order.comment == SHORT_STRATEGY:
-                        order_type = order.type
-                        symbol = order.symbol
-                        volume = order.volume
+            for symbol in listSymbols:
+                orders_to_check = mt5.positions_get(symbol=symbol)
+                for single_order in orders_to_check:
+                    profit = profit + single_order.profit
+
+                if profit > 0 and len(orders_to_check) > 1:
+                    for single_order in orders_to_check:
+
+                        order_type = single_order.type
+                        symbol = single_order.symbol
+                        volume = single_order.volume
                         action = ''
 
                         if order_type == mt5.ORDER_TYPE_BUY:
@@ -95,21 +98,20 @@ def check_position_gain_for_momentum_strategy(listAccount):
                             "symbol": symbol,
                             "volume": float(volume),
                             "type": order_type,
-                            "position": order.ticket,
+                            "position": single_order.ticket,
                             "price": price,
                             "magic": 234000,
-                            "comment": SHORT_STRATEGY,
+                            "comment": SCALPING_STRATEGY,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_IOC,
                         }
 
                         mt5.order_send(close_request)
-                        open_trade(action,symbol,listAccount,SHORT_STRATEGY)
+                        open_trade(action, symbol, listAccount, SHORT_STRATEGY)
+                        send_profit_after_hedge(profit,symbol)
 
-                send_manual_profit(profit)
 
-
-def check_position_gain_for_scalp_strategy(listAccount):
+def check_hedge_for_scalp_strategy(listAccount):
     if date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for singleAccount in listAccount:
@@ -120,47 +122,58 @@ def check_position_gain_for_scalp_strategy(listAccount):
                 quit()
 
             openOrders = mt5.positions_get()
-            profit = 0
-            account_info_dict = mt5.account_info()._asdict()
-            balance = account_info_dict['balance']
-            targetProfit = (balance * singleAccount["lot"] / 300)
+            loss_pips = 0
+            symbol = ''
+
             for order in openOrders:
 
-                if order.comment == SCALPING_STRATEGY:
-                    profit = profit + order.profit
+                if order.comment == SCALPING_STRATEGY and order.profit < 0:
+                    loss_pips = abs(order.price_open - order.price_current)
+                    symbol = order.symbol
+                if loss_pips > retrieve_symbol_pip(symbol):
 
-            if profit >= targetProfit:
-                for order in openOrders:
-                    if order.comment == SCALPING_STRATEGY:
-                        order_type = order.type
-                        symbol = order.symbol
-                        volume = order.volume
+                    if order.type == 0:
+                        trade_type = mt5.ORDER_TYPE_SELL
+                        price = mt5.symbol_info_tick(symbol).bid
+                        action = 'SELL'
 
-                        if order_type == mt5.ORDER_TYPE_BUY:
-                            order_type = mt5.ORDER_TYPE_SELL
-                            price = mt5.symbol_info_tick(symbol).bid
-                            action = 'BUY'
+                    else:
+                        trade_type = mt5.ORDER_TYPE_BUY
+                        price = mt5.symbol_info_tick(symbol).ask
+                        action = 'BUY'
 
-                        else:
-                            order_type = mt5.ORDER_TYPE_BUY
-                            price = mt5.symbol_info_tick(symbol).ask
-                            action = 'SELL'
+                    buy_request = {
+                        "action": mt5.TRADE_ACTION_DEAL,
+                        "symbol": symbol,
+                        "volume": order.volume * 4,
+                        "type": trade_type,
+                        "price": price,
+                        # "tp": tp,
+                        # "sl": sl,
+                        "magic": ea_magic_number,
+                        "comment": SCALPING_STRATEGY,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_IOC,
+                    }
 
-                        close_request = {
-                            "action": mt5.TRADE_ACTION_DEAL,
-                            "symbol": symbol,
-                            "volume": float(volume),
-                            "type": order_type,
-                            "position": order.ticket,
-                            "price": price,
-                            "magic": 234000,
-                            "comment": SCALPING_STRATEGY,
-                            "type_time": mt5.ORDER_TIME_GTC,
-                            "type_filling": mt5.ORDER_FILLING_FOK,
-                        }
+                    # send a trading request
 
-                        mt5.order_send(close_request)
-                        if order.profit > 0:
-                            open_trade(action, symbol, listAccount, SCALPING_STRATEGY)
+                    result = mt5.order_send(buy_request)
+                    send_message_telegram_hedge(symbol, order.volume * 4, action, SCALPING_STRATEGY)
 
-                    send_scalping_scalping(profit)
+
+def retrieve_symbol_pip(symbol):
+    pip = 0
+    if symbol in SP500_MT5:
+        pip = 5
+    elif symbol in XAUUSD:
+        pip = 2
+    elif 'JPY' in symbol:
+        pip = 0.1
+    else:
+        pip = 0.001
+
+    return pip
+
+
+

@@ -14,6 +14,13 @@ def send_message_telegram_open_trade(symbol, lot, action,strategy):
         'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                message))
 
+def send_message_telegram_hedge(symbol, lot, action,strategy):
+    message = '** Open Trade for Hedge **\nSymbol: {}\nLot: {}\nAction: {}\nStrategy: {}\n{}'.format(symbol, lot, action,strategy,
+                                                                             '\N{call me hand}')
+    requests.post(
+        'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                               message))
+
 
 def send_message_telegram_close_trade(symbol, profit):
     if profit > 0:
@@ -80,9 +87,9 @@ def send_scalping_scalping(profit):
                                                                                    message))
 
 
-def send_manual_profit(profit):
+def send_profit_after_hedge(profit,symbol):
     if profit > 0:
-        message = "** Close all Manual position **\nProfit :{}$\n{}".format(round(profit, 2), '\N{money-mouth face}')
+        message = "** Close Order after Hedge **\nSymbol:{}\nProfit :{}$\n{}".format(symbol,round(profit, 2), '\N{money-mouth face}')
         requests.post(
             'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                    message))
