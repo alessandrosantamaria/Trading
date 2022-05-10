@@ -10,6 +10,13 @@ from set_stop_loss import update_position_stop_loss_for_follow_strategy, close_o
 
 ids = []
 close_orders = []
+list_symbols = []
+symbol_object = {
+    'symbol': 'EURUSD',
+    'action': "BUY",
+    'renko': 0.001
+}
+list_symbols.append(symbol_object)
 
 
 def run_schedule_stop_loss():
@@ -38,6 +45,9 @@ def run_daily_report_manual():
 
 def run_daily_report_fast():
     send_daily_report(listBroker, SCALPING_STRATEGY)
+
+def run_schedule_scalping_with_repeat():
+    open_trade_scalping_with_repeat(list_symbols,listBroker)
 
 
 def run_telegram_close_order(close_orders=close_orders, ids=ids):
@@ -114,6 +124,12 @@ def home():
     elif symbol == "FB":
         symbol = FB_MT5
 
+    symbol_object = {
+        'symbol' : symbol,
+        'action' : order,
+        'renko' : renko
+    }
+    list_symbols.append(symbol_object)
 
     open_trade_scalping(order, symbol, listBroker, renko)
 
