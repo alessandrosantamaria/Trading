@@ -341,7 +341,7 @@ def open_trade_scalping_with_repeat(list_symbol, listBroker):
 
 
 
-                 if len(openOrders)>0:
+                 if len(openOrders)==0:
                      if single_symbol['action'] == 'BUY':
                          trade_type = mt5.ORDER_TYPE_BUY
                          price = mt5.symbol_info_tick(single_symbol['symbol']).ask

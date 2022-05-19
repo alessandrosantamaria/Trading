@@ -11,12 +11,6 @@ from set_stop_loss import update_position_stop_loss_for_follow_strategy, close_o
 ids = []
 close_orders = []
 list_symbols = []
-symbol_object = {
-    'symbol': 'EURUSD',
-    'action': "BUY",
-    'renko': 0.001
-}
-list_symbols.append(symbol_object)
 
 
 def run_schedule_stop_loss():
@@ -46,8 +40,9 @@ def run_daily_report_manual():
 def run_daily_report_fast():
     send_daily_report(listBroker, SCALPING_STRATEGY)
 
+
 def run_schedule_scalping_with_repeat():
-    open_trade_scalping_with_repeat(list_symbols,listBroker)
+    open_trade_scalping_with_repeat(list_symbols, listBroker)
 
 
 def run_telegram_close_order(close_orders=close_orders, ids=ids):
@@ -61,15 +56,15 @@ def run_schedule_retrieve_calendar():
 
 
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
-# sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
+sched.add_job(run_schedule_scalping_with_repeat, trigger='cron', second='*/10', misfire_grace_time=5)
 # sched.add_job(run_schedule_all_profit_target, trigger='cron', second='*/10', misfire_grace_time=5)
-#sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
-#sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
+# sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
+# sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
 # sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
 # sched.add_job(run_schedule_retrieve_calendar, trigger='cron', day='*/1', hour='10')
-sched.add_job(run_telegram_close_order, trigger='cron', second='*/2', misfire_grace_time=5)
+#sched.add_job(run_telegram_close_order, trigger='cron', second='*/2', misfire_grace_time=5)
 sched.start()
 
 app = Flask(__name__)
@@ -80,7 +75,7 @@ def home():
     json_data = request.json
     symbol = str(json_data["symbol"])
     order = str(json_data["order"]).upper()
-    strategy = str(json_data["strategy"])
+    #strategy = str(json_data["strategy"])
     renko = float(json_data["sizeRenko"])
 
     message = symbol + " - " + order
@@ -124,16 +119,22 @@ def home():
     elif symbol == "FB":
         symbol = FB_MT5
 
-    symbol_object = {
-        'symbol' : symbol,
-        'action' : order,
-        'renko' : renko
-    }
-    list_symbols.append(symbol_object)
+    found = False
+    for i, single in enumerate(list_symbols):
 
-    open_trade_scalping(order, symbol, listBroker, renko)
+        if symbol == single['symbol']:
+            list_symbols[i]['action'] = order
+            found = True
 
-    ##open_trade(order, symbol, listBroker,SHORT_STRATEGY)
+    if found == False:
+        symbol_object = {
+            'symbol': symbol,
+            'action': order,
+            'renko': renko
+        }
+        list_symbols.append(symbol_object)
+
+    close_trade(symbol, listBroker, SCALPING_STRATEGY)
 
     print("***     END     ***")
     return message
