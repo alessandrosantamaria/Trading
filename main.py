@@ -124,13 +124,15 @@ def home():
 
         if symbol == single['symbol']:
             list_symbols[i]['action'] = order
+            list_symbols[i]['counter'] = 0
             found = True
 
     if found == False:
         symbol_object = {
             'symbol': symbol,
             'action': order,
-            'renko': renko
+            'renko': renko,
+            'counter': 0
         }
         list_symbols.append(symbol_object)
 

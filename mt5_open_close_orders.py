@@ -341,7 +341,7 @@ def open_trade_scalping_with_repeat(list_symbol, listBroker):
 
 
 
-                 if len(openOrders)==0:
+                 if len(openOrders)==0 or single_symbol['counter']<3:
                      if single_symbol['action'] == 'BUY':
                          trade_type = mt5.ORDER_TYPE_BUY
                          price = mt5.symbol_info_tick(single_symbol['symbol']).ask
@@ -360,7 +360,7 @@ def open_trade_scalping_with_repeat(list_symbol, listBroker):
                          lot = lot_calculation(single_symbol['symbol'])
 
 
-
+                     single_symbol['counter'] += 1
                      buy_request = {
                          "action": mt5.TRADE_ACTION_DEAL,
                          "symbol": single_symbol['symbol'],
@@ -464,3 +464,5 @@ def lot_calculation(symbol):
         lot = round(lot * accounts.broker["lot"], 2)
 
     return lot
+
+
