@@ -10,8 +10,6 @@ from set_stop_loss import update_position_stop_loss_for_follow_strategy, close_o
 
 ids = []
 close_orders = []
-list_symbols = []
-
 
 def run_schedule_stop_loss():
     update_position_stop_loss_for_follow_strategy(listBroker)
@@ -41,10 +39,6 @@ def run_daily_report_fast():
     send_daily_report(listBroker, SCALPING_STRATEGY)
 
 
-def run_schedule_scalping_with_repeat():
-    open_trade_scalping_with_repeat(list_symbols, listBroker)
-
-
 def run_telegram_close_order(close_orders=close_orders, ids=ids):
     ids = retrieve_position_ids(listBroker, ids)
     close_orders, ids = check_position_Ids_close_orders(listBroker, ids, close_orders)
@@ -56,8 +50,7 @@ def run_schedule_retrieve_calendar():
 
 
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
-sched.add_job(run_schedule_scalping_with_repeat, trigger='cron', second='*/10', misfire_grace_time=5)
-# sched.add_job(run_schedule_all_profit_target, trigger='cron', second='*/10', misfire_grace_time=5)
+sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
 # sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
@@ -119,24 +112,8 @@ def home():
     elif symbol == "FB":
         symbol = FB_MT5
 
-    found = False
-    for i, single in enumerate(list_symbols):
 
-        if symbol == single['symbol']:
-            list_symbols[i]['action'] = order
-            list_symbols[i]['counter'] = 0
-            found = True
-
-    if found == False:
-        symbol_object = {
-            'symbol': symbol,
-            'action': order,
-            'renko': renko,
-            'counter': 0
-        }
-        list_symbols.append(symbol_object)
-
-    close_trade(symbol, listBroker, SCALPING_STRATEGY)
+    open_trade(order,symbol,listBroker,LONG_STRATEGY)
 
     print("***     END     ***")
     return message

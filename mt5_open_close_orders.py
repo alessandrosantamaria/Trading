@@ -114,8 +114,8 @@ def open_trade(action, symbol, listBroker, strategy):
 
             openOrders = mt5.positions_get(symbol=symbol)
 
-          #  if len(openOrders) > 0:
-          #      close_trade(symbol, listBroker, strategy)
+            if len(openOrders) > 0:
+              close_trade(symbol, listBroker, strategy)
 
             if action == 'BUY':
                 trade_type = mt5.ORDER_TYPE_BUY
@@ -327,70 +327,6 @@ def round_sl_tp(price, sizeRenko, symbol, action):
     return tp, sl
 
 
-def open_trade_scalping_with_repeat(list_symbol, listBroker):
-
-        for i in listBroker:
-
-            for single_symbol in list_symbol:
-
-                 if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
-                     print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
-                     quit()
-
-                 openOrders = mt5.positions_get(symbol=single_symbol['symbol'])
-
-
-
-                 if len(openOrders)==0 or single_symbol['counter']<3:
-                     if single_symbol['action'] == 'BUY':
-                         trade_type = mt5.ORDER_TYPE_BUY
-                         price = mt5.symbol_info_tick(single_symbol['symbol']).ask
-                         tp = price + (single_symbol['renko']/2)
-
-                     else:
-                         trade_type = mt5.ORDER_TYPE_SELL
-                         price = mt5.symbol_info_tick(single_symbol['symbol']).bid
-                         tp = price - (single_symbol['renko']/2)
-
-                     if DAX_MT5 in single_symbol['symbol']:
-                         lot = 0.1
-                     elif SP500_MT5 in single_symbol['symbol']:
-                         lot = 0.5
-                     else:
-                         lot = lot_calculation(single_symbol['symbol'])
-
-
-                     single_symbol['counter'] += 1
-                     buy_request = {
-                         "action": mt5.TRADE_ACTION_DEAL,
-                         "symbol": single_symbol['symbol'],
-                         "volume": lot,
-                         "type": trade_type,
-                         "price": price,
-                         "tp": tp,
-                         "magic": ea_magic_number,
-                         "comment": SCALPING_STRATEGY,
-                         "type_time": mt5.ORDER_TIME_GTC,
-                         "type_filling": mt5.ORDER_FILLING_IOC,
-                     }
-
-                     # send a trading request
-                     result = mt5.order_send(buy_request)
-                     if result.retcode != mt5.TRADE_RETCODE_DONE:
-                         print("[x] order_send failed, retcode={}".format(result.retcode))
-                         # request the result as a dictionary and display it element by element
-                         result_dict = result._asdict()
-                         for field in result_dict.keys():
-                             print("{}={}".format(field, result_dict[field]))
-                             # if this is a trading request structure, display it element by element as well
-                             if field == "request":
-                                 traderequest_dict = result_dict[field]._asdict()
-                                 for tradereq_filed in traderequest_dict:
-                                     print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
-
-                     else:
-
-                         print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
 def round_tp(price, sizeRenko, symbol, action):
