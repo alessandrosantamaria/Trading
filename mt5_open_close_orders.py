@@ -115,7 +115,7 @@ def open_trade(action, symbol, listBroker, strategy):
             openOrders = mt5.positions_get(symbol=symbol)
 
             if len(openOrders) > 0:
-              close_trade(symbol, listBroker, strategy)
+                close_trade(symbol, listBroker, strategy)
 
             if action == 'BUY':
                 trade_type = mt5.ORDER_TYPE_BUY
@@ -130,7 +130,7 @@ def open_trade(action, symbol, listBroker, strategy):
             if DAX_MT5 in symbol:
                 lot = 0.1
             else:
-                lot = round(lot_calculation(symbol) ,2)
+                lot = round(lot_calculation(symbol), 2)
 
             if symbol == "BTCUSD" or symbol == "ETHUSD":
                 typeFilling = mt5.ORDER_FILLING_FOK
@@ -171,7 +171,7 @@ def open_trade(action, symbol, listBroker, strategy):
                 print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
-def open_trade_scalping(action, symbol, listBroker, renko):
+def open_trade_recall(action, symbol, listBroker, strategy):
     if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for i in listBroker:
@@ -181,26 +181,23 @@ def open_trade_scalping(action, symbol, listBroker, renko):
                 quit()
 
             openOrders = mt5.positions_get(symbol=symbol)
-            orderFound = False
 
+            if len(openOrders) == 0:
 
-            if orderFound == False:
                 if action == 'BUY':
                     trade_type = mt5.ORDER_TYPE_BUY
                     price = mt5.symbol_info_tick(symbol).ask
-                    tp, sl = no_round_tp(price, renko, action)
+                    # tp, sl = round_sl_tp(price,  symbol, action)
 
                 else:
                     trade_type = mt5.ORDER_TYPE_SELL
                     price = mt5.symbol_info_tick(symbol).bid
-                    tp, sl = no_round_tp(price, renko, action)
+                    # tp, sl = round_sl_tp(price, sizeRenko, symbol, action)
 
                 if DAX_MT5 in symbol:
                     lot = 0.1
-                elif SP500_MT5 in symbol:
-                    lot = 0.5
                 else:
-                    lot = lot_calculation(symbol)
+                    lot = round(lot_calculation(symbol), 2)
 
                 if symbol == "BTCUSD" or symbol == "ETHUSD":
                     typeFilling = mt5.ORDER_FILLING_FOK
@@ -213,16 +210,16 @@ def open_trade_scalping(action, symbol, listBroker, renko):
                     "volume": lot,
                     "type": trade_type,
                     "price": price,
-                    "tp": tp,
-                    "sl": sl,
+                    # "tp": tp,
+                    # "sl": sl,
                     "magic": ea_magic_number,
-                    "comment": SCALPING_STRATEGY,
+                    "comment": strategy,
                     "type_time": mt5.ORDER_TIME_GTC,
                     "type_filling": typeFilling,
                 }
 
                 # send a trading request
-                send_message_telegram_open_trade(symbol, lot, action, SCALPING_STRATEGY)
+                send_message_telegram_open_trade(symbol, lot, action, strategy)
                 result = mt5.order_send(buy_request)
                 if result.retcode != mt5.TRADE_RETCODE_DONE:
                     print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -327,8 +324,6 @@ def round_sl_tp(price, sizeRenko, symbol, action):
     return tp, sl
 
 
-
-
 def round_tp(price, sizeRenko, symbol, action):
     if action == "BUY":
         if "JPY" in symbol:
@@ -400,5 +395,3 @@ def lot_calculation(symbol):
         lot = round(lot * accounts.broker["lot"], 2)
 
     return lot
-
-

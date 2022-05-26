@@ -31,6 +31,7 @@ def update_position_stop_loss_for_follow_strategy(listAccount):
                         LONG_STRATEGY:
                     if order.type == 0:
                         price = order.price_open + abs(round(order.price_current - order.price_open, 5) / 2)
+
                     else:
                         price = order.price_open - abs(round(order.price_current - order.price_open, 5) / 2)
 
@@ -51,7 +52,7 @@ def update_position_stop_loss_for_follow_strategy(listAccount):
                         if order.sl == 0 or price < order.sl:
                             mt5.order_send(request)
                     elif order.type == 0:
-                        if order.sl > 0 or price > order.sl:
+                        if order.sl == 0 or price > order.sl:
                             mt5.order_send(request)
 
 

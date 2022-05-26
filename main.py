@@ -68,8 +68,11 @@ def home():
     json_data = request.json
     symbol = str(json_data["symbol"])
     order = str(json_data["order"]).upper()
-    #strategy = str(json_data["strategy"])
-    renko = float(json_data["sizeRenko"])
+    if "strategy" in json_data:
+         strategy = str(json_data["strategy"])
+    else:
+        strategy = ""
+    #renko = float(json_data["sizeRenko"])
 
     message = symbol + " - " + order
     print("***PLACING ORDER***")
@@ -112,8 +115,10 @@ def home():
     elif symbol == "FB":
         symbol = FB_MT5
 
-
-    open_trade(order,symbol,listBroker,LONG_STRATEGY)
+    if strategy != "":
+        open_trade_recall(order,symbol,listBroker,strategy)
+    else:
+        open_trade(order,symbol,listBroker,LONG_STRATEGY)
 
     print("***     END     ***")
     return message
