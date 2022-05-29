@@ -14,6 +14,9 @@ close_orders = []
 def run_schedule_stop_loss():
     update_position_stop_loss_for_follow_strategy(listBroker)
 
+def run_close_order_scalping():
+    check_position_gain_scalping(listBroker)
+
 
 def run_schedule_check_hedge_scalping():
     check_hedge_for_scalp_strategy(listBroker)
@@ -51,6 +54,7 @@ def run_schedule_retrieve_calendar():
 
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
 sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
+sched.add_job(run_close_order_scalping, trigger='cron', second='*/2', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
 # sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
@@ -117,6 +121,8 @@ def home():
 
     if strategy != "":
         open_trade_recall(order,symbol,listBroker,strategy)
+    elif strategy == SCALPING_STRATEGY:
+        open_trade(order,symbol,listBroker,SCALPING_STRATEGY)
     else:
         open_trade(order,symbol,listBroker,LONG_STRATEGY)
 

@@ -85,6 +85,6 @@ USDZAR = "USDZAR"
 XAUUSD = "XAUUSD"
 LONG_STRATEGY = "follow"
 SHORT_STRATEGY = "manual"
-SCALPING_STRATEGY = "scalp"
+SCALPING_STRATEGY = "scalping"
 MANUAL_STRATEGY = 'xmanual'
 eventFound = False

@@ -161,6 +161,59 @@ def check_hedge_for_scalp_strategy(listAccount):
                     result = mt5.order_send(buy_request)
                     send_message_telegram_hedge(symbol, order.volume * 4, action, SCALPING_STRATEGY)
 
+def check_position_gain_scalping(listAccount):
+    if date.today().weekday() < 5 or (
+            date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
+        for singleAccount in listAccount:
+            if not mt5.initialize(login=singleAccount["login"], server=singleAccount["server"],
+                                  password=singleAccount["password"]):
+                print("initialize() failed for account {} , error code =".format(singleAccount["login"]),
+                      mt5.last_error())
+                quit()
+
+            openOrders = mt5.positions_get()
+            account_info_dict = mt5.account_info()._asdict()
+
+
+            for order in openOrders:
+
+                if order.profit > 0 and order.comment == \
+                        SCALPING_STRATEGY:
+
+                    order_type = order.type
+                    symbol = order.symbol
+                    volume = order.volume
+
+                    if order_type == mt5.ORDER_TYPE_BUY:
+                        order_type = mt5.ORDER_TYPE_SELL
+                        price = mt5.symbol_info_tick(symbol).bid
+                    else:
+                        order_type = mt5.ORDER_TYPE_BUY
+                        price = mt5.symbol_info_tick(symbol).ask
+
+                    if symbol == BTC_MT5:
+                        typeFilling = mt5.ORDER_FILLING_FOK
+                    else:
+                        typeFilling = mt5.ORDER_FILLING_IOC
+
+                    close_request = {
+                        "action": mt5.TRADE_ACTION_DEAL,
+                        "symbol": symbol,
+                        "volume": float(volume),
+                        "type": order_type,
+                        "position": order.ticket,
+                        "price": price,
+                        "magic": 234000,
+                        "comment": order.comment,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": typeFilling,
+                    }
+
+                    mt5.order_send(close_request)
+
+
+
+
 
 def retrieve_symbol_pip(symbol):
     pip = 0
