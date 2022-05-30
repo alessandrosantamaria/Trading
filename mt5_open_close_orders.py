@@ -258,7 +258,7 @@ def close_trade(symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 for order in openOrders:
-                    if order.comment == strategy:
+                    if order.comment == LONG_STRATEGY or order.comment == "recall":
 
                         order_type = order.type
                         symbol = order.symbol

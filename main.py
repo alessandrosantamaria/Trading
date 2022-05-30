@@ -53,8 +53,8 @@ def run_schedule_retrieve_calendar():
 
 
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
-#sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
-#sched.add_job(run_close_order_scalping, trigger='cron', second='*/1', misfire_grace_time=5)
+sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
+sched.add_job(run_close_order_scalping, trigger='cron', second='*/1', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
 # sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
