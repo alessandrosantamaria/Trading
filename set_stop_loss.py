@@ -25,10 +25,13 @@ def update_position_stop_loss_for_follow_strategy(listAccount):
             price = 0
 
             for order in openOrders:
+                lot_size = 50
+                if order.comment == "recall":
+                    lot_size = 100
 
                 if order.profit > float(
-                        str((balance * singleAccount["lot"] * 0.5 / 50))[:4]) and order.comment == \
-                        LONG_STRATEGY:
+                        str((balance * singleAccount["lot"] * 0.5 / lot_size))[:4]) and (order.comment == \
+                        LONG_STRATEGY or order.comment == "recall"):
                     if order.type == 0:
                         price = order.price_open + abs(round(order.price_current - order.price_open, 5) / 2)
 
@@ -173,4 +176,4 @@ def close_orders_after_target_for_follow_strategy(listAccount):
                                                                                            message))
 
 
-update_position_stop_loss_for_follow_strategy(listBroker)
+#update_position_stop_loss_for_follow_strategy(listBroker)

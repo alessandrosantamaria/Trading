@@ -131,7 +131,10 @@ def open_trade(action, symbol, listBroker, strategy):
                 lot = 0.1
             else:
                 if strategy == SCALPING_STRATEGY:
-                    lot = round(lot_calculation(symbol)*2, 2)
+                    if SP500_MT5 in symbol:
+                        lot = round(lot_calculation(symbol) * 2, 1)
+                    else:
+                        lot = round(lot_calculation(symbol)*2, 2)
                 else:
                     lot = round(lot_calculation(symbol), 2)
 
@@ -388,7 +391,7 @@ def lot_calculation(symbol):
     elif DOW_MR5 in symbol or NASDAQ_MT5 in symbol:
         lot = round(balance / 50000, 1)
     elif SP500_MT5 in symbol:
-        lot = round(balance / 50000, 1)
+        lot = round(balance / 100000, 1)
     else:
         lot = round(balance / 100000, 2)
 

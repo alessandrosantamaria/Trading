@@ -177,7 +177,7 @@ def check_position_gain_scalping(listAccount):
 
             for order in openOrders:
 
-                if order.profit > 0 and order.comment == \
+                if order.profit > 10 and order.comment == \
                         SCALPING_STRATEGY:
 
                     order_type = order.type
