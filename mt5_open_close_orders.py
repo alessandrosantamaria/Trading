@@ -115,7 +115,7 @@ def open_trade(action, symbol, listBroker, strategy):
             openOrders = mt5.positions_get(symbol=symbol)
 
             if len(openOrders) > 0:
-                if strategy == SHORT_STRATEGY:
+                if strategy == SCALPING_STRATEGY:
                     close_order_scalping(action,symbol, listBroker, strategy)
                 else:
                     close_trade(symbol, listBroker, strategy)
@@ -313,7 +313,7 @@ def close_order_scalping(action, symbol, listBroker, strategy):
                     volume = order.volume
 
                     if (order_type == mt5.ORDER_TYPE_BUY and action == 'SELL') or (
-                            order_type == mt5.ORDER_TYPE_BUY and action == 'BUY'):
+                            order_type == mt5.ORDER_TYPE_SELL and action == 'BUY'):
 
                         if order_type == mt5.ORDER_TYPE_BUY:
                             order_type = mt5.ORDER_TYPE_SELL
