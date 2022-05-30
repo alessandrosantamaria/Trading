@@ -462,3 +462,5 @@ def report_telegram(account):
         ))
 
     return message
+
+retrieve_history_by_symbol("XAUUSD",broker)
