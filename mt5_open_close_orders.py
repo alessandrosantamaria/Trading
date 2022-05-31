@@ -381,7 +381,7 @@ def close_order_scalping(action, symbol, listBroker, strategy):
                     volume = order.volume
 
                     if (order_type == mt5.ORDER_TYPE_BUY and action == 'SELL') or (
-                            order_type == mt5.ORDER_TYPE_SELL and action == 'BUY'):
+                            order_type == mt5.ORDER_TYPE_SELL and action == 'BUY') or action == 'CLOSE ALL':
 
                         if order_type == mt5.ORDER_TYPE_BUY:
                             order_type = mt5.ORDER_TYPE_SELL

@@ -123,7 +123,10 @@ def home():
     if strategy == "recall":
         open_trade_recall(order,symbol,listBroker,strategy)
     elif strategy == SCALPING_STRATEGY:
-        open_trade(order,symbol,listBroker,SCALPING_STRATEGY)
+        if order == "CLOSE ALL":
+            close_order_scalping(symbol, listBroker, strategy)
+        else:
+            open_trade(order,symbol,listBroker,SCALPING_STRATEGY)
     elif strategy == SHORT_STRATEGY:
         open_trade_with_renko_size(order,symbol,listBroker,strategy,renko)
     else:
