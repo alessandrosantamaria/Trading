@@ -434,7 +434,7 @@ def lot_calculation(symbol):
     account_info_dict = mt5.account_info()._asdict()
     balance = account_info_dict['balance']
     if "XAU" in symbol:
-        lot = round(balance / 200000, 2)
+        lot = round(balance / 400000, 2)
     elif "ZAR" in symbol or DAX_MT5 in symbol:
         lot = round(balance / 200000, 2)
     elif BTC_MT5 in symbol:
@@ -442,7 +442,7 @@ def lot_calculation(symbol):
     elif DOW_MR5 in symbol or NASDAQ_MT5 in symbol:
         lot = round(balance / 50000, 1)
     elif SP500_MT5 in symbol:
-        lot = round(balance / 100000, 1)
+        lot = round(balance / 200000, 1)
     else:
         lot = round(balance / 100000, 2)
 
