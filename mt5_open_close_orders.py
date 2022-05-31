@@ -116,7 +116,7 @@ def open_trade(action, symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 if strategy == SCALPING_STRATEGY:
-                    close_order_scalping(action, symbol, listBroker, strategy)
+                    close_order_scalping(action, symbol, listBroker)
                 else:
                     close_trade(symbol, listBroker, strategy)
 
@@ -197,12 +197,12 @@ def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
                 if action == 'BUY':
                     trade_type = mt5.ORDER_TYPE_BUY
                     price = mt5.symbol_info_tick(symbol).ask
-                    tp = no_round_tp(price, sizeRenko, symbol, action)
+                    tp = no_round_tp(price, sizeRenko, action)
 
                 else:
                     trade_type = mt5.ORDER_TYPE_SELL
                     price = mt5.symbol_info_tick(symbol).bid
-                    tp = no_round_tp(price, sizeRenko, symbol, action)
+                    tp = no_round_tp(price, sizeRenko, action)
 
                 if DAX_MT5 in symbol:
                     lot = 0.1
@@ -259,7 +259,13 @@ def open_trade_recall(action, symbol, listBroker, strategy):
 
             openOrders = mt5.positions_get(symbol=symbol)
 
-            if len(openOrders) == 0:
+            orderFound = False
+
+            for order in openOrders:
+                if order.comment == LONG_STRATEGY or order.comment == RECALL_STRATEGY:
+                    orderFound = True
+
+            if orderFound == False:
 
                 if action == 'BUY':
                     trade_type = mt5.ORDER_TYPE_BUY
@@ -326,7 +332,7 @@ def close_trade(symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 for order in openOrders:
-                    if order.comment == LONG_STRATEGY or order.comment == "recall" or order.comment == SHORT_STRATEGY:
+                    if order.comment == strategy:
 
                         order_type = order.type
                         symbol = order.symbol
@@ -365,7 +371,7 @@ def close_trade(symbol, listBroker, strategy):
                             send_message_telegram_update_gain_balance(balance)
 
 
-def close_order_scalping(action, symbol, listBroker, strategy):
+def close_order_scalping(action, symbol, listBroker):
     for i in listBroker:
         if date.today().weekday() == 4 and symbol != "BTCUSD" or date.today().weekday() < 5:
             if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
@@ -380,8 +386,8 @@ def close_order_scalping(action, symbol, listBroker, strategy):
                     symbol = order.symbol
                     volume = order.volume
 
-                    if (order_type == mt5.ORDER_TYPE_BUY and action == 'SELL') or (
-                            order_type == mt5.ORDER_TYPE_SELL and action == 'BUY') or action == 'CLOSE ALL':
+                    if ((order_type == mt5.ORDER_TYPE_BUY and action == 'SELL') or (
+                            order_type == mt5.ORDER_TYPE_SELL and action == 'BUY') or action == 'CLOSE ALL') and order.comment == SCALPING_STRATEGY:
 
                         if order_type == mt5.ORDER_TYPE_BUY:
                             order_type = mt5.ORDER_TYPE_SELL

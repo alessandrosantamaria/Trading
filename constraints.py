@@ -87,4 +87,5 @@ LONG_STRATEGY = "follow"
 SHORT_STRATEGY = "manual"
 SCALPING_STRATEGY = "scalping"
 MANUAL_STRATEGY = 'xmanual'
+RECALL_STRATEGY = 'recall'
 eventFound = False

@@ -58,7 +58,7 @@ sched.add_job(run_close_order_scalping, trigger='cron', second='*/1', misfire_gr
 # sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
 sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
-#sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
+sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
 sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
 # sched.add_job(run_schedule_retrieve_calendar, trigger='cron', day='*/1', hour='10')
 #sched.add_job(run_telegram_close_order, trigger='cron', second='*/2', misfire_grace_time=5)
@@ -120,11 +120,11 @@ def home():
     elif symbol == "FB":
         symbol = FB_MT5
 
-    if strategy == "recall":
+    if strategy == RECALL_STRATEGY:
         open_trade_recall(order,symbol,listBroker,strategy)
     elif strategy == SCALPING_STRATEGY:
         if order == "CLOSE ALL":
-            close_order_scalping(symbol, listBroker, strategy)
+            close_order_scalping(order,symbol, listBroker)
         else:
             open_trade(order,symbol,listBroker,SCALPING_STRATEGY)
     elif strategy == SHORT_STRATEGY:
