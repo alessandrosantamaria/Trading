@@ -197,12 +197,12 @@ def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
                 if action == 'BUY':
                     trade_type = mt5.ORDER_TYPE_BUY
                     price = mt5.symbol_info_tick(symbol).ask
-                    tp = round_tp(price, sizeRenko, symbol, action)
+                    tp = no_round_tp(price, sizeRenko, symbol, action)
 
                 else:
                     trade_type = mt5.ORDER_TYPE_SELL
                     price = mt5.symbol_info_tick(symbol).bid
-                    tp = round_tp(price, sizeRenko, symbol, action)
+                    tp = no_round_tp(price, sizeRenko, symbol, action)
 
                 if DAX_MT5 in symbol:
                     lot = 0.1
@@ -229,7 +229,7 @@ def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
                 }
 
                 # send a trading request
-                send_message_telegram_open_trade(symbol, lot, action, strategy)
+
                 result = mt5.order_send(buy_request)
                 if result.retcode != mt5.TRADE_RETCODE_DONE:
                     print("[x] order_send failed, retcode={}".format(result.retcode))
@@ -244,7 +244,7 @@ def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
                                 print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
 
                 else:
-
+                    send_message_telegram_open_trade(symbol, lot, action, strategy)
                     print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
@@ -483,7 +483,7 @@ def round_tp(price, sizeRenko, symbol, action):
             tp = round(price - sizeRenko, 3)
             sl = round(price + sizeRenko * 2, 3)
 
-    return tp, sl
+    return tp
 
 
 def no_round_tp(price, sizeRenko, action):
@@ -495,7 +495,7 @@ def no_round_tp(price, sizeRenko, action):
         tp = price - sizeRenko
         sl = price + sizeRenko
 
-    return tp, sl
+    return tp
 
 
 def lot_calculation(symbol):
