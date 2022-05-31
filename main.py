@@ -76,7 +76,8 @@ def home():
          strategy = str(json_data["strategy"])
     else:
         strategy = ""
-    #renko = float(json_data["sizeRenko"])
+    renko = float(json_data["sizeRenko"])
+
 
     message = symbol + " - " + order
     print("***PLACING ORDER***")
@@ -123,6 +124,8 @@ def home():
         open_trade_recall(order,symbol,listBroker,strategy)
     elif strategy == SCALPING_STRATEGY:
         open_trade(order,symbol,listBroker,SCALPING_STRATEGY)
+    elif strategy == SHORT_STRATEGY:
+        open_trade_with_renko_size(order,symbol,listBroker,strategy,renko)
     else:
         open_trade(order,symbol,listBroker,LONG_STRATEGY)
 

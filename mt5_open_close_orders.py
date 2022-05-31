@@ -116,7 +116,7 @@ def open_trade(action, symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 if strategy == SCALPING_STRATEGY:
-                    close_order_scalping(action,symbol, listBroker, strategy)
+                    close_order_scalping(action, symbol, listBroker, strategy)
                 else:
                     close_trade(symbol, listBroker, strategy)
 
@@ -178,6 +178,74 @@ def open_trade(action, symbol, listBroker, strategy):
             else:
 
                 print("Order successfully placed in broker account {}!".format(i["login"]))
+
+
+def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
+    if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
+            date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
+        for i in listBroker:
+
+            if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+                print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+                quit()
+            if action == "CLOSE ALL":
+
+                openOrders = mt5.positions_get(symbol=symbol)
+                if len(openOrders) > 0:
+                    close_trade(symbol, listBroker, strategy)
+            else:
+                if action == 'BUY':
+                    trade_type = mt5.ORDER_TYPE_BUY
+                    price = mt5.symbol_info_tick(symbol).ask
+                    tp = round_tp(price, sizeRenko, symbol, action)
+
+                else:
+                    trade_type = mt5.ORDER_TYPE_SELL
+                    price = mt5.symbol_info_tick(symbol).bid
+                    tp = round_tp(price, sizeRenko, symbol, action)
+
+                if DAX_MT5 in symbol:
+                    lot = 0.1
+                else:
+                    lot = round(lot_calculation(symbol), 2)
+
+                if symbol == "BTCUSD" or symbol == "ETHUSD":
+                    typeFilling = mt5.ORDER_FILLING_FOK
+                else:
+                    typeFilling = mt5.ORDER_FILLING_IOC
+
+                buy_request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": symbol,
+                    "volume": lot,
+                    "type": trade_type,
+                    "price": price,
+                    "tp": tp,
+                    # "sl": sl,
+                    "magic": ea_magic_number,
+                    "comment": strategy,
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": typeFilling,
+                }
+
+                # send a trading request
+                send_message_telegram_open_trade(symbol, lot, action, strategy)
+                result = mt5.order_send(buy_request)
+                if result.retcode != mt5.TRADE_RETCODE_DONE:
+                    print("[x] order_send failed, retcode={}".format(result.retcode))
+                    # request the result as a dictionary and display it element by element
+                    result_dict = result._asdict()
+                    for field in result_dict.keys():
+                        print("{}={}".format(field, result_dict[field]))
+                        # if this is a trading request structure, display it element by element as well
+                        if field == "request":
+                            traderequest_dict = result_dict[field]._asdict()
+                            for tradereq_filed in traderequest_dict:
+                                print("traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+
+                else:
+
+                    print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
 def open_trade_recall(action, symbol, listBroker, strategy):
@@ -258,7 +326,7 @@ def close_trade(symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 for order in openOrders:
-                    if order.comment == LONG_STRATEGY or order.comment == "recall":
+                    if order.comment == LONG_STRATEGY or order.comment == "recall" or order.comment == SHORT_STRATEGY:
 
                         order_type = order.type
                         symbol = order.symbol
@@ -292,7 +360,7 @@ def close_trade(symbol, listBroker, strategy):
                         mt5.order_send(close_request)
                         account_info_dict = mt5.account_info()._asdict()
                         balance = account_info_dict['balance']
-                        if strategy != SCALPING_STRATEGY:
+                        if strategy != SCALPING_STRATEGY or strategy != SHORT_STRATEGY:
                             send_message_telegram_close_trade(symbol, order.profit)
                             send_message_telegram_update_gain_balance(balance)
 

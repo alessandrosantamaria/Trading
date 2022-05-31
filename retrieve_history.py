@@ -463,4 +463,4 @@ def report_telegram(account):
 
     return message
 
-retrieve_history_by_symbol("XAUUSD",broker)
+daily_report(broker,SCALPING_STRATEGY)
