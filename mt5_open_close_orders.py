@@ -141,7 +141,10 @@ def open_trade(action, symbol, listBroker, strategy):
                     else:
                         lot = round(lot_calculation(symbol) * 2, 2)
                 else:
-                    lot = round(lot_calculation(symbol), 2)
+                    if SP500_MT5 in symbol:
+                        lot = round(lot_calculation(symbol) * 2, 1)
+                    else:
+                        lot = round(lot_calculation(symbol), 2)
 
             if symbol == "BTCUSD" or symbol == "ETHUSD":
                 typeFilling = mt5.ORDER_FILLING_FOK
@@ -282,7 +285,10 @@ def open_trade_recall(action, symbol, listBroker, strategy):
                 if DAX_MT5 in symbol:
                     lot = 0.1
                 else:
-                    lot = round(lot_calculation(symbol), 2)
+                    if SP500_MT5 in symbol:
+                        lot = round(lot_calculation(symbol) * 2, 1)
+                    else:
+                        lot = round(lot_calculation(symbol), 2)
 
                 if symbol == "BTCUSD" or symbol == "ETHUSD":
                     typeFilling = mt5.ORDER_FILLING_FOK
