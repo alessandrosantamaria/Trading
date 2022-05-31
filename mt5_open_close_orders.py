@@ -117,6 +117,8 @@ def open_trade(action, symbol, listBroker, strategy):
             if len(openOrders) > 0:
                 if strategy == SCALPING_STRATEGY:
                     close_order_scalping(action, symbol, listBroker)
+                elif strategy == SHORT_STRATEGY:
+                    close_trade_for_manual_strategy(action, symbol, listBroker)
                 else:
                     close_trade(symbol, listBroker, strategy)
 
@@ -332,7 +334,7 @@ def close_trade(symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 for order in openOrders:
-                    if order.comment == strategy:
+                    if order.comment == LONG_STRATEGY or order.comment == RECALL_STRATEGY:
 
                         order_type = order.type
                         symbol = order.symbol
@@ -370,6 +372,55 @@ def close_trade(symbol, listBroker, strategy):
                             send_message_telegram_close_trade(symbol, order.profit)
                             send_message_telegram_update_gain_balance(balance)
 
+
+def close_trade_for_manual_strategy(symbol, listBroker, strategy):
+    for i in listBroker:
+        if date.today().weekday() == 4 and symbol != "BTCUSD" or date.today().weekday() < 5:
+            if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
+                print("initialize() failed for account {} , error code =".format(i["login"]), mt5.last_error())
+                quit()
+
+            openOrders = mt5.positions_get(symbol=symbol)
+
+            if len(openOrders) > 0:
+                for order in openOrders:
+                    if order.comment == strategy:
+
+                        order_type = order.type
+                        symbol = order.symbol
+                        volume = order.volume
+
+                        if order_type == mt5.ORDER_TYPE_BUY:
+                            order_type = mt5.ORDER_TYPE_SELL
+                            price = mt5.symbol_info_tick(symbol).bid
+                        else:
+                            order_type = mt5.ORDER_TYPE_BUY
+                            price = mt5.symbol_info_tick(symbol).ask
+
+                        if symbol == BTC_MT5:
+                            typeFilling = mt5.ORDER_FILLING_FOK
+                        else:
+                            typeFilling = mt5.ORDER_FILLING_IOC
+
+                        close_request = {
+                            "action": mt5.TRADE_ACTION_DEAL,
+                            "symbol": symbol,
+                            "volume": float(volume),
+                            "type": order_type,
+                            "position": order.ticket,
+                            "price": price,
+                            "magic": 234000,
+                            "comment": order.comment,
+                            "type_time": mt5.ORDER_TIME_GTC,
+                            "type_filling": typeFilling,
+                        }
+
+                        mt5.order_send(close_request)
+                        account_info_dict = mt5.account_info()._asdict()
+                        balance = account_info_dict['balance']
+                        if strategy != SCALPING_STRATEGY or strategy != SHORT_STRATEGY:
+                            send_message_telegram_close_trade(symbol, order.profit)
+                            send_message_telegram_update_gain_balance(balance)
 
 def close_order_scalping(action, symbol, listBroker):
     for i in listBroker:
