@@ -76,6 +76,10 @@ def home():
          strategy = str(json_data["strategy"])
     else:
         strategy = ""
+    if "trend" in json_data:
+        trend = str(json_data["trend"])
+    else:
+        trend = "in"
     renko = float(json_data["sizeRenko"])
 
 
@@ -130,7 +134,7 @@ def home():
     elif strategy == SHORT_STRATEGY:
         open_trade_with_renko_size(order,symbol,listBroker,strategy,renko)
     else:
-        open_trade(order,symbol,listBroker,LONG_STRATEGY)
+        open_trade(order,symbol,listBroker,LONG_STRATEGY,trend)
 
     print("***     END     ***")
     return message

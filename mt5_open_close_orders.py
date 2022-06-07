@@ -103,7 +103,7 @@ def open_trade_manual_execution(action, symbol, listBroker, tp, sl, lotInput):
             print("Order successfully placed in broker account {}!".format(i["login"]))
 
 
-def open_trade(action, symbol, listBroker, strategy):
+def open_trade(action, symbol, listBroker, strategy,trend):
     if (date.today().weekday() == 4 and symbol != BTC_MT5) or date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
         for i in listBroker:
@@ -142,7 +142,7 @@ def open_trade(action, symbol, listBroker, strategy):
                         lot = round(lot_calculation(symbol) * 2, 2)
                 else:
                     if SP500_MT5 in symbol:
-                        lot = round(lot_calculation(symbol) * 2, 1)
+                        lot = round(lot_calculation(symbol), 1)
                     else:
                         lot = round(lot_calculation(symbol), 2)
 
@@ -160,7 +160,7 @@ def open_trade(action, symbol, listBroker, strategy):
                 # "tp": tp,
                 # "sl": sl,
                 "magic": ea_magic_number,
-                "comment": strategy,
+                "comment": "{0} {1}".format(strategy,trend),
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": typeFilling,
             }
@@ -197,7 +197,7 @@ def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
 
                 openOrders = mt5.positions_get(symbol=symbol)
                 if len(openOrders) > 0:
-                    close_trade(symbol, listBroker, strategy)
+                    close_trade_for_manual_strategy(symbol, listBroker, strategy)
             else:
                 if action == 'BUY':
                     trade_type = mt5.ORDER_TYPE_BUY
@@ -286,7 +286,7 @@ def open_trade_recall(action, symbol, listBroker, strategy):
                     lot = 0.1
                 else:
                     if SP500_MT5 in symbol:
-                        lot = round(lot_calculation(symbol) * 2, 1)
+                        lot = round(lot_calculation(symbol) , 1)
                     else:
                         lot = round(lot_calculation(symbol), 2)
 
@@ -340,7 +340,7 @@ def close_trade(symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 for order in openOrders:
-                    if order.comment == LONG_STRATEGY or order.comment == RECALL_STRATEGY:
+                    if LONG_STRATEGY in order.comment:
 
                         order_type = order.type
                         symbol = order.symbol
@@ -390,7 +390,7 @@ def close_trade_for_manual_strategy(symbol, listBroker, strategy):
 
             if len(openOrders) > 0:
                 for order in openOrders:
-                    if order.comment == strategy:
+                    if (strategy == RECALL_STRATEGY or strategy == LONG_STRATEGY) or order.comment == strategy:
 
                         order_type = order.type
                         symbol = order.symbol
