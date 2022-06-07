@@ -124,8 +124,8 @@ def home():
     elif symbol == "FB":
         symbol = FB_MT5
 
-    if strategy == RECALL_STRATEGY:
-        open_trade_recall(order,symbol,listBroker,strategy)
+    if strategy == LINE_BREAK_STRATEGY:
+        open_trade_line_break(order,symbol,listBroker,strategy)
     elif strategy == SCALPING_STRATEGY:
         if order == "CLOSE ALL":
             close_order_scalping(order,symbol, listBroker)

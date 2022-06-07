@@ -172,13 +172,12 @@ def check_position_gain_scalping(listAccount):
                 quit()
 
             openOrders = mt5.positions_get()
-            account_info_dict = mt5.account_info()._asdict()
 
 
             for order in openOrders:
 
-                if order.profit > 10 and order.comment == \
-                        SCALPING_STRATEGY:
+                if order.profit > 10 and (order.comment == \
+                        SCALPING_STRATEGY or order.comment == LINE_BREAK_STRATEGY):
 
                     order_type = order.type
                     symbol = order.symbol

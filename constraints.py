@@ -88,4 +88,5 @@ SHORT_STRATEGY = "manual"
 SCALPING_STRATEGY = "scalping"
 MANUAL_STRATEGY = 'xmanual'
 RECALL_STRATEGY = 'recall'
+LINE_BREAK_STRATEGY = 'linebreak'
 eventFound = False
