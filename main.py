@@ -126,11 +126,12 @@ def home():
 
     if strategy == LINE_BREAK_STRATEGY:
         open_trade_line_break(order,symbol,listBroker,strategy)
-    elif strategy == SCALPING_STRATEGY:
+    elif strategy == SCALPING_STRATEGY or strategy == 'scalping swh' or strategy == 'takeall':
         if order == "CLOSE ALL":
             close_order_scalping(order,symbol, listBroker)
         else:
-            open_trade(order,symbol,listBroker,SCALPING_STRATEGY)
+            open_trade_scalping(order,symbol,listBroker,strategy)
+
     elif strategy == SHORT_STRATEGY:
         open_trade_with_renko_size(order,symbol,listBroker,strategy,renko)
     else:

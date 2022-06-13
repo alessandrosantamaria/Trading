@@ -176,8 +176,8 @@ def check_position_gain_scalping(listAccount):
 
             for order in openOrders:
 
-                if order.profit > 10 and (order.comment == \
-                        SCALPING_STRATEGY or order.comment == LINE_BREAK_STRATEGY):
+                if (order.profit > 10 and (order.comment == \
+                        SCALPING_STRATEGY or order.comment == LINE_BREAK_STRATEGY or order.comment == 'scalping swh')) or order.profit>2 and order.comment == 'takeall':
 
                     order_type = order.type
                     symbol = order.symbol
