@@ -108,7 +108,7 @@ def check_position_gain_for_scalping_strategy(listAccount):
 
                         mt5.order_send(close_request)
                         open_trade(action, symbol, listAccount, SHORT_STRATEGY)
-                        send_profit_after_hedge(profit,symbol)
+                        send_profit_after_hedge(profit, symbol)
 
 
 def check_hedge_for_scalp_strategy(listAccount):
@@ -161,6 +161,7 @@ def check_hedge_for_scalp_strategy(listAccount):
                     result = mt5.order_send(buy_request)
                     send_message_telegram_hedge(symbol, order.volume * 4, action, SCALPING_STRATEGY)
 
+
 def check_position_gain_scalping(listAccount):
     if date.today().weekday() < 5 or (
             date.today().weekday() == 6 and datetime.utcnow().hour >= 22):
@@ -172,12 +173,18 @@ def check_position_gain_scalping(listAccount):
                 quit()
 
             openOrders = mt5.positions_get()
-
+            account_info_dict = mt5.account_info()._asdict()
+            balance = account_info_dict['balance']
 
             for order in openOrders:
 
-                if (order.profit > 10 and (order.comment == \
-                        SCALPING_STRATEGY or order.comment == LINE_BREAK_STRATEGY or order.comment == 'scalping swh')) or order.profit>2 and order.comment == 'takeall':
+                if ((order.profit > float(
+                        str((balance * singleAccount["lot"] / 2500))[:4]) or order.profit < -float(
+                    str((balance * singleAccount["lot"] / 750))[:4]))
+                    and (order.comment == SCALPING_STRATEGY or order.comment == LINE_BREAK_STRATEGY or order.comment == 'scalping swh')) or (
+                        (order.profit > float(
+                    str((balance * singleAccount["lot"] / 12500))[:4]) or order.profit < -float(
+                    str((balance * singleAccount["lot"] / 1250))[:4])) and order.comment == 'takeall'):
 
                     order_type = order.type
                     symbol = order.symbol
@@ -211,9 +218,6 @@ def check_position_gain_scalping(listAccount):
                     mt5.order_send(close_request)
 
 
-
-
-
 def retrieve_symbol_pip(symbol):
     pip = 0
     if symbol in SP500_MT5:
@@ -228,4 +232,4 @@ def retrieve_symbol_pip(symbol):
     return pip
 
 
-
+check_position_gain_scalping(listBroker)

@@ -1,7 +1,13 @@
+import time
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from flask import *
 
 from apscheduler.schedulers.background import BackgroundScheduler
+
+import constraints
+from api_call import open_trade_api
+from binance_retrieve import signal_crypto_percentage, retrieve_price_crypto
 from check_position_gain import *
 
 from mt5_open_close_orders import *
@@ -42,6 +48,15 @@ def run_daily_report_fast():
     send_daily_report(listBroker, SCALPING_STRATEGY)
 
 
+def run_open_trade_with_api_1_hour():
+    print('Starting check for symbols\n')
+    for key, value in symbols.items():
+        print("Check {}".format(value['mt4']))
+        open_trade_api(symbol= value['mt4'],target = 5,bar_pips= 20,time_interval="30min",lot =1,send_message=False)
+        time.sleep(10)
+
+
+
 def run_telegram_close_order(close_orders=close_orders, ids=ids):
     ids = retrieve_position_ids(listBroker, ids)
     close_orders, ids = check_position_Ids_close_orders(listBroker, ids, close_orders)
@@ -51,17 +66,29 @@ def run_telegram_close_order(close_orders=close_orders, ids=ids):
 def run_schedule_retrieve_calendar():
     close_all_profit_and_no_trading(listBroker, datetime.now().date())
 
+def run_schedule_signal_crypto():
+    signal_crypto_percentage(5,'4h')
+
+def run_schedule_signal_crypto_target_reached():
+    retrieve_price_crypto('SOL', 43.65)
+
 
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
-sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
-sched.add_job(run_close_order_scalping, trigger='cron', second='*/1', misfire_grace_time=5)
+#sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
+#sched.add_job(run_close_order_scalping, trigger='cron', second='*/1', misfire_grace_time=5)
+sched.add_job(run_open_trade_with_api_1_hour, trigger='cron', minute='*/30', misfire_grace_time=5)
+sched.add_job(run_schedule_signal_crypto, trigger='cron', hour='*/4', misfire_grace_time=5)
+
 # sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
-sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
-sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
-sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
+#sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
+#sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
+#sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
 # sched.add_job(run_schedule_retrieve_calendar, trigger='cron', day='*/1', hour='10')
 #sched.add_job(run_telegram_close_order, trigger='cron', second='*/2', misfire_grace_time=5)
+
+sched.add_job(run_schedule_signal_crypto_target_reached, trigger='cron', minute='*/5', misfire_grace_time=5)
+
 sched.start()
 
 app = Flask(__name__)
@@ -69,6 +96,7 @@ app = Flask(__name__)
 
 @app.route("/tradingview", methods=['GET', 'POST'])
 def home():
+
     json_data = request.json
     symbol = str(json_data["symbol"])
     order = str(json_data["order"]).upper()

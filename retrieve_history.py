@@ -463,4 +463,3 @@ def report_telegram(account):
 
     return message
 
-daily_report(broker,SCALPING_STRATEGY)

@@ -15,7 +15,7 @@ def get_info(symbol):
     return info
 
 
-def open_trade_manual_execution(action, symbol, listBroker, tp, sl, lotInput):
+def open_trade_manual_execution(action, symbol, listBroker,sizeRenko,lotInput):
     for i in listBroker:
 
         if not mt5.initialize(login=i["login"], server=i["server"], password=i["password"]):
@@ -31,12 +31,12 @@ def open_trade_manual_execution(action, symbol, listBroker, tp, sl, lotInput):
         if action == 'BUY':
             trade_type = mt5.ORDER_TYPE_BUY
             price = mt5.symbol_info_tick(symbol).ask
-            # tp, sl = no_round_tp(price, sizeRenko, action)
+            tp = no_round_tp(price, sizeRenko, action)
 
         else:
             trade_type = mt5.ORDER_TYPE_SELL
             price = mt5.symbol_info_tick(symbol).bid
-            # tp, sl = no_round_tp(price, sizeRenko, action)
+            tp = no_round_tp(price, sizeRenko, action)
 
         if "XAU" in symbol:
             lot = round(balance / 200000, 2)
@@ -76,7 +76,7 @@ def open_trade_manual_execution(action, symbol, listBroker, tp, sl, lotInput):
             "type": trade_type,
             "price": price,
             "tp": tp,
-            "sl": sl,
+           # "sl": sl,
             "magic": ea_magic_number,
             "comment": i["strategyManual"],
             "type_time": mt5.ORDER_TIME_GTC,
@@ -274,12 +274,12 @@ def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
                 if action == 'BUY':
                     trade_type = mt5.ORDER_TYPE_BUY
                     price = mt5.symbol_info_tick(symbol).ask
-                    tp = no_round_tp(price, sizeRenko, action)
+                    tp,sl = no_round_tp(price, sizeRenko, action)
 
                 else:
                     trade_type = mt5.ORDER_TYPE_SELL
                     price = mt5.symbol_info_tick(symbol).bid
-                    tp = no_round_tp(price, sizeRenko, action)
+                    tp,sl = no_round_tp(price, sizeRenko, action)
 
                 if DAX_MT5 in symbol:
                     lot = 0.1
@@ -298,7 +298,7 @@ def open_trade_with_renko_size(action, symbol, listBroker, strategy, sizeRenko):
                     "type": trade_type,
                     "price": price,
                     "tp": tp,
-                    # "sl": sl,
+                    "sl": sl,
                     "magic": ea_magic_number,
                     "comment": strategy,
                     "type_time": mt5.ORDER_TIME_GTC,
@@ -609,11 +609,11 @@ def round_tp(price, sizeRenko, symbol, action):
 def no_round_tp(price, sizeRenko, action):
     if action == "BUY":
         tp = price + sizeRenko
-        sl = price - sizeRenko
+        #sl = price - (sizeRenko*2)
 
     else:
         tp = price - sizeRenko
-        sl = price + sizeRenko
+        #sl = price + (sizeRenko*2)
 
     return tp
 

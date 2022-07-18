@@ -21,33 +21,103 @@ APPLE_MT5 = "#AAPL"
 NETFLIX_MT5 = "#NFLX"
 TWITTER_MT5 = "#TWTR"
 symbols = {
-    "AUDCAD": 0,
-    "AUDCHF": 0,
-    "AUDJPY": 0,
-    "AUDNZD": 0,
-    "AUDUSD": 0,
-    "BTCUSD": 0,
-    "CADJPY": 0,
-    "GER.30": 0,
-    "EURAUD": 0,
-    "EURCAD": 0,
-    "EURGBP": 0,
-    "EURJPY": 0,
-    "EURNZD": 0,
-    "EURUSD": 0,
-    "GBPAUD": 0,
-    "GBPCAD": 0,
-    "GBPJPY": 0,
-    "GBPNZD": 0,
-    "GBPUSD": 0,
-    "US500": 0,
-    "US100": 0,
-    "NZDCAD": 0,
-    "NZDJPY": 0,
-    "NZDUSD": 0,
-    "USDCAD": 0,
-    "USDJPY": 0,
-    "XAUUSD": 0
+    "AUDCAD": {
+        "mt4": "AUDCAD",
+        "api": "AUD/CAD"
+    },
+    "AUDCHF": {
+        "mt4": "AUDCHF",
+        "api": "AUD/CHF"
+    },
+    "AUDJPY": {
+        "mt4": "AUDJPY",
+        "api": "AUD/JPY"
+    },
+    "AUDNZD": {
+        "mt4": "AUDNZD",
+        "api": "AUD/NZD"
+    },
+    "AUDUSD": {
+        "mt4": "AUDUSD",
+        "api": "AUD/USD"
+    },
+    "CADJPY": {
+        "mt4": "CADJPY",
+        "api": "CAD/JPY"
+    },
+    "EURAUD": {
+        "mt4": "EURAUD",
+        "api": "EUR/AUD"
+    },
+    "EURCAD": {
+        "mt4": "EURCAD",
+        "api": "EUR/CAD"
+    },
+    "EURGBP": {
+        "mt4": "EURGBP",
+        "api": "EUR/GBP"
+    },
+    "EURJPY": {
+        "mt4": "EURJPY",
+        "api": "EUR/JPY"
+    },
+    "EURNZD": {
+        "mt4": "EURNZD",
+        "api": "EUR/NZD"
+    },
+    "EURUSD": {
+        "mt4": "EURUSD",
+        "api": "EUR/USD"
+    },
+    "GBPAUD": {
+        "mt4": "GBPAUD",
+        "api": "GBP/AUD"
+    },
+    "GBPCAD": {
+        "mt4": "GBPCAD",
+        "api": "GBP/CAD"
+    },
+    "GBPJPY": {
+        "mt4": "GBPJPY",
+        "api": "GBP/JPY"
+    },
+    "GBPNZD": {
+        "mt4": "GBPNZD",
+        "api": "GBP/NZD"
+    },
+    "GBPUSD": {
+        "mt4": "GBPUSD",
+        "api": "GBP/USD"
+    },
+    "NZDCAD": {
+        "mt4": "NZDCAD",
+        "api": "NZD/CAD"
+    },
+    "NZDJPY": {
+        "mt4": "NZDJPY",
+        "api": "NZD/JPY"
+    },
+    "NZDUSD": {
+        "mt4": "NZDUSD",
+        "api": "NZD/USD"
+    },
+    "USDCAD": {
+        "mt4": "USDCAD",
+        "api": "USD/CAD"
+    },
+    "USDCHF": {
+        "mt4": "USDCHF",
+        "api": "USD/CHF"
+    },
+    "USDJPY": {
+        "mt4": "USDJPY",
+        "api": "USD/JPY"
+    },
+    "XAUUSD": {
+        "mt4": "XAUUSD",
+        "api": "XAU/USD"
+    },
+
 }
 AUDCAD = "AUDCAD"
 AUDCHF = "AUDCHF"
@@ -83,6 +153,7 @@ USDCHF = "USDCHF"
 USDJPY = "USDJPY"
 USDZAR = "USDZAR"
 XAUUSD = "XAUUSD"
+SPX = "SPX"
 LONG_STRATEGY = "follow"
 SHORT_STRATEGY = "manual"
 SCALPING_STRATEGY = "scalping"
@@ -90,3 +161,5 @@ MANUAL_STRATEGY = 'xmanual'
 RECALL_STRATEGY = 'recall'
 LINE_BREAK_STRATEGY = 'linebreak'
 eventFound = False
+targets = []
+message_already_send = False

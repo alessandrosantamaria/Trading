@@ -40,6 +40,20 @@ def send_message_telegram_update_gain_balance(balance):
         'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                message))
 
+def send_message_crypto(symbol,price):
+    message = '** Open trade for symbol {} at price {} with suggested target {}**'.format(symbol,price,float(price)*1.05)
+    requests.post(
+        'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                               message))
+
+def send_message_target_achieved(symbol,price):
+    message = '** Price with target {} and symbol {} reached **'.format( price,symbol)
+    requests.post(
+        'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                               message))
+
+
+
 
 def send_message_telegram_set_stop_loss(symbol, sl):
     message = '** Stop Loss successfully placed to Initial Price for Pair {} with value {} for free ride {} **'.format(
@@ -55,6 +69,12 @@ def send_daily_report(listBroker, strategy):
         requests.post(
             'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
                                                                                    message))
+
+def send_message_api(symbol):
+    message = '** Open Trade **\nSymbol: {}'.format(symbol)
+    requests.post(
+        'https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}'.format(TOKEN_TELEGRAM, CHAT_ID_TELEGRAM,
+                                                                               message))
 
 
 def send_message_close_order(closeOrders):

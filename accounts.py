@@ -1,7 +1,7 @@
 from constraints import LONG_STRATEGY, SHORT_STRATEGY, SCALPING_STRATEGY
 
 broker = {
-    "login": 215015,
+    "login": 216845,
     "server": "BRKHoldings-Demo",
     "password": "alessandro123",
     "lot": 0.5,
