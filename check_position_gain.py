@@ -232,4 +232,4 @@ def retrieve_symbol_pip(symbol):
     return pip
 
 
-check_position_gain_scalping(listBroker)
+#check_position_gain_scalping(listBroker)

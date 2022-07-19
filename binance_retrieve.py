@@ -23,7 +23,7 @@ def get_historical_price(symbol: str, currency: str, interval: str, limit: int):
         f'{base_url}/klines?symbol={symbol}{currency}&interval={interval}&limit={limit}')
     content = json.loads(r.content)
     list_candles = []
-    if (len(content) > 0):
+    if (len(content) > 0 and type(content) is list):
         for x in content:
             dict = {
                 'symbol': symbol,
@@ -40,9 +40,15 @@ def get_historical_price(symbol: str, currency: str, interval: str, limit: int):
 def backtest_percentage(percentage_input, limit, interval):
     all_count_win = 0
     all_count_lose = 0
-    for symbol in SYMBOL_USDT:
+    url = 'https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+    params = {
+        'limit': 100,
+    }
+    r = requests.get(url, params=params)
+    data = r.json()
+    for symbol in data['data']:
 
-        arr = get_historical_price(symbol=symbol, currency='USDT', interval=interval, limit=limit)
+        arr = get_historical_price(symbol=symbol['symbol'], currency='BUSD', interval=interval, limit=limit)
         count_win = 0
         count_lose = 0
         found = False
@@ -69,17 +75,30 @@ def backtest_percentage(percentage_input, limit, interval):
                     if found == False:
                         count_lose += 1
                         print(
-                            'Order opened {} with price {} for symbol {}{} is a loss trade'.format(timestamp,initial_price,sub['symbol'], sub['currency']))
+                            'Order opened {} with price {} for symbol {}{} is a loss trade'.format(timestamp,
+                                                                                                   initial_price,
+                                                                                                   sub['symbol'],
+                                                                                                   sub['currency']))
                         all_count_lose += 1
         print('Win Trades {} - Lose Trades {}'.format(count_win, count_lose))
     print('All count Win {} - All count Lose {}'.format(all_count_win, all_count_lose))
 
 
 def signal_crypto_percentage(percentage, interval):
-    for symbol in SYMBOL_USDT:
+    url = 'https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+    params = {
+        'limit': 100,
+    }
+    r = requests.get(url, params=params)
+    data = r.json()
+    for symbol in data['data']:
 
-        arr = get_historical_price(symbol=symbol, currency='USDT', interval=interval, limit=2)
+        arr = get_historical_price(symbol=symbol['symbol'], currency='BUSD', interval=interval, limit=3)
         percentage_calc = (float(arr[1]['close']) - float(arr[0]['close'])) / float(arr[0]['close']) * 100
+        print("Symbol {}: Actual Price : {} Previous Price : {} Percentage {}".format(symbol['symbol'],
+                                                                                      float(arr[1]['close']),
+                                                                                      float(arr[0]['close']),
+                                                                                      percentage_calc))
         if percentage_calc > percentage:
             send_message_crypto('{}{}'.format(arr[1]['symbol'], arr[1]['currency']), arr[1]['close'])
 
@@ -97,6 +116,5 @@ def retrieve_price_crypto(symbol, target):
         constraints.message_already_send = True
 
 
-
 #backtest_percentage(5, 1000, '4h')
-# signal_crypto_percentage(1,'4h')
+# signal_crypto_percentage(5,'4h')

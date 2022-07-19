@@ -70,7 +70,7 @@ def run_schedule_signal_crypto():
     signal_crypto_percentage(5,'4h')
 
 def run_schedule_signal_crypto_target_reached():
-    retrieve_price_crypto('SOL', 43.65)
+    retrieve_price_crypto('RUNE', 2.879)
 
 
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
