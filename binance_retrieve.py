@@ -94,13 +94,14 @@ def signal_crypto_percentage(percentage, interval):
     for symbol in data['data']:
 
         arr = get_historical_price(symbol=symbol['symbol'], currency='BUSD', interval=interval, limit=3)
-        percentage_calc = (float(arr[1]['close']) - float(arr[0]['close'])) / float(arr[0]['close']) * 100
-        print("Symbol {}: Actual Price : {} Previous Price : {} Percentage {}".format(symbol['symbol'],
-                                                                                      float(arr[1]['close']),
-                                                                                      float(arr[0]['close']),
-                                                                                      percentage_calc))
-        if percentage_calc > percentage:
-            send_message_crypto('{}{}'.format(arr[1]['symbol'], arr[1]['currency']), arr[1]['close'])
+        if len(arr)>0:
+           percentage_calc = (float(arr[1]['close']) - float(arr[0]['close'])) / float(arr[0]['close']) * 100
+           print("Symbol {}: Actual Price : {} Previous Price : {} Percentage {}".format(symbol['symbol'],
+                                                                                         float(arr[1]['close']),
+                                                                                         float(arr[0]['close']),
+                                                                                         percentage_calc))
+           if percentage_calc > percentage:
+               send_message_crypto('{}{}'.format(arr[1]['symbol'], arr[1]['currency']), arr[1]['close'])
 
 
 def retrieve_price_crypto(symbol, target):
@@ -117,4 +118,4 @@ def retrieve_price_crypto(symbol, target):
 
 
 #backtest_percentage(5, 1000, '4h')
-# signal_crypto_percentage(5,'4h')
+#signal_crypto_percentage(5,'4h')

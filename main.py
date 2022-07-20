@@ -6,7 +6,7 @@ from flask import *
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import constraints
-from api_call import open_trade_api
+from api_call import open_trade_api, open_trade_api_percentage_slope
 from binance_retrieve import signal_crypto_percentage, retrieve_price_crypto
 from check_position_gain import *
 
@@ -17,8 +17,10 @@ from set_stop_loss import update_position_stop_loss_for_follow_strategy, close_o
 ids = []
 close_orders = []
 
+
 def run_schedule_stop_loss():
     update_position_stop_loss_for_follow_strategy(listBroker)
+
 
 def run_close_order_scalping():
     check_position_gain_scalping(listBroker)
@@ -52,9 +54,9 @@ def run_open_trade_with_api_1_hour():
     print('Starting check for symbols\n')
     for key, value in symbols.items():
         print("Check {}".format(value['mt4']))
-        open_trade_api(symbol= value['mt4'],target = 5,bar_pips= 20,time_interval="30min",lot =1,send_message=False)
+        open_trade_api_percentage_slope(symbol=value['mt4'], target=5, percentage_input=0.1, time_interval="30min",
+                                        lot=1, send_message=False)
         time.sleep(10)
-
 
 
 def run_telegram_close_order(close_orders=close_orders, ids=ids):
@@ -66,26 +68,28 @@ def run_telegram_close_order(close_orders=close_orders, ids=ids):
 def run_schedule_retrieve_calendar():
     close_all_profit_and_no_trading(listBroker, datetime.now().date())
 
+
 def run_schedule_signal_crypto():
-    signal_crypto_percentage(5,'4h')
+    signal_crypto_percentage(5, '4h')
+
 
 def run_schedule_signal_crypto_target_reached():
-    retrieve_price_crypto('RUNE', 2.879)
+    retrieve_price_crypto('QNT', 117.5)
 
 
 sched = BackgroundScheduler(daemon=True, job_defaults={'max_instances': 4})
-#sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
-#sched.add_job(run_close_order_scalping, trigger='cron', second='*/1', misfire_grace_time=5)
+# sched.add_job(run_schedule_stop_loss, trigger='cron', second='*/10', misfire_grace_time=5)
+# sched.add_job(run_close_order_scalping, trigger='cron', second='*/1', misfire_grace_time=5)
 sched.add_job(run_open_trade_with_api_1_hour, trigger='cron', minute='*/30', misfire_grace_time=5)
 sched.add_job(run_schedule_signal_crypto, trigger='cron', hour='*/4', misfire_grace_time=5)
 
 # sched.add_job(run_schedule_check_gain, trigger='cron', second='*/5', misfire_grace_time=5)
 # sched.add_job(run_schedule_check_hedge_scalping, trigger='cron', second='*/6', misfire_grace_time=5)
-#sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
-#sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
-#sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
+# sched.add_job(run_daily_report_follow, trigger='cron', day='*/1')
+# sched.add_job(run_daily_report_manual, trigger='cron', day='*/1')
+# sched.add_job(run_daily_report_fast, trigger='cron', day='*/1')
 # sched.add_job(run_schedule_retrieve_calendar, trigger='cron', day='*/1', hour='10')
-#sched.add_job(run_telegram_close_order, trigger='cron', second='*/2', misfire_grace_time=5)
+# sched.add_job(run_telegram_close_order, trigger='cron', second='*/2', misfire_grace_time=5)
 
 sched.add_job(run_schedule_signal_crypto_target_reached, trigger='cron', minute='*/5', misfire_grace_time=5)
 
@@ -96,12 +100,11 @@ app = Flask(__name__)
 
 @app.route("/tradingview", methods=['GET', 'POST'])
 def home():
-
     json_data = request.json
     symbol = str(json_data["symbol"])
     order = str(json_data["order"]).upper()
     if "strategy" in json_data:
-         strategy = str(json_data["strategy"])
+        strategy = str(json_data["strategy"])
     else:
         strategy = ""
     if "trend" in json_data:
@@ -109,7 +112,6 @@ def home():
     else:
         trend = "in"
     renko = float(json_data["sizeRenko"])
-
 
     message = symbol + " - " + order
     print("***PLACING ORDER***")
@@ -153,17 +155,17 @@ def home():
         symbol = FB_MT5
 
     if strategy == LINE_BREAK_STRATEGY:
-        open_trade_line_break(order,symbol,listBroker,strategy)
+        open_trade_line_break(order, symbol, listBroker, strategy)
     elif strategy == SCALPING_STRATEGY or strategy == 'scalping swh' or strategy == 'takeall':
         if order == "CLOSE ALL":
-            close_order_scalping(order,symbol, listBroker)
+            close_order_scalping(order, symbol, listBroker)
         else:
-            open_trade_scalping(order,symbol,listBroker,strategy)
+            open_trade_scalping(order, symbol, listBroker, strategy)
 
     elif strategy == SHORT_STRATEGY:
-        open_trade_with_renko_size(order,symbol,listBroker,strategy,renko)
+        open_trade_with_renko_size(order, symbol, listBroker, strategy, renko)
     else:
-        open_trade(order,symbol,listBroker,LONG_STRATEGY,trend)
+        open_trade(order, symbol, listBroker, LONG_STRATEGY, trend)
 
     print("***     END     ***")
     return message
