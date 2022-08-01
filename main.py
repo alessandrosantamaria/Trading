@@ -54,8 +54,8 @@ def run_open_trade_with_api_1_hour():
     print('Starting check for symbols\n')
     for key, value in symbols.items():
         print("Check {}".format(value['mt4']))
-        open_trade_api_percentage_slope(symbol=value['mt4'], target=5, percentage_input=0.1, time_interval="30min",
-                                        lot=1, send_message=False)
+        #open_trade_api_percentage_slope(symbol=value['mt4'], target=5, percentage_input=0.1, time_interval="30min", lot=1, send_message=False)
+        open_trade_api(symbol=value['mt4'], target=5, bar_pips=20, time_interval="30min", lot=1, send_message=False)
         time.sleep(10)
 
 
